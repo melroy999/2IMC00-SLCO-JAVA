@@ -1,23 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="debug">
+    <Properties>
+        <Property name="log_date">log_date</Property>
+        <Property name="log_name">log_name</Property>
+    </Properties>
     <Appenders>
-        <RandomAccessFile name="RandomAccessFile" fileName="logs/data.log" immediateFlush="false" append="false">
-            <PatternLayout pattern="[%level][%d{UNIX_MILLIS}][%t][%c{1}] %msg%n"/>
-        </RandomAccessFile>
         <RollingRandomAccessFile name="RollingRandomAccessFile"
-                                 fileName="logs/rolling_data.log"
-                                 filePattern="logs/rolling_data.%i.gz"
-                                 immediateFlush="false">
+                                 fileName="logs/${main:log_name}_${main:log_date}/${main:log_name}.log"
+                                 filePattern="logs/${main:log_name}_${main:log_date}/${main:log_name}.%i.gz"
+                                 immediateFlush="false"
+                                 append="false">
             <PatternLayout pattern="[%level][%d{UNIX_MILLIS}][%t][%c{1}] %msg%n"/>
             <Policies>
-                <SizeBasedTriggeringPolicy size="10 MB"/>
+                <SizeBasedTriggeringPolicy size="100 MB"/>
             </Policies>
-            <DefaultRolloverStrategy fileIndex="nomax" />
-        </RollingRandomAccessFile >
+            <DefaultRolloverStrategy fileIndex="nomax"/>
+        </RollingRandomAccessFile>
     </Appenders>
     <Loggers>
         <Root level="info" includeLocation="false">
-<!--            <AppenderRef ref="RandomAccessFile"/>-->
             <AppenderRef ref="RollingRandomAccessFile"/>
         </Root>
     </Loggers>
