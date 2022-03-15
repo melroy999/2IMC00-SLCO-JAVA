@@ -1,21 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="debug">
     <Appenders>
-<!--        <Console name="Console-Appender" target="SYSTEM_OUT">-->
-<!--            <PatternLayout>-->
-<!--                <pattern>-->
-<!--                    [%level][%d{ABSOLUTE_MICROS}][%t][%c{1}]: %msg%n-->
-<!--                </pattern>>-->
-<!--            </PatternLayout>-->
-<!--        </Console>-->
-        <!-- Async Loggers will auto-flush in batches, so switch off immediateFlush. -->
         <RandomAccessFile name="RandomAccessFile" fileName="logs/data.log" immediateFlush="false" append="false">
-            <PatternLayout pattern="[%level][%d{ABSOLUTE_MICROS}][%t][%c{1}]: %msg%n"/>
+            <PatternLayout pattern="[%level][%d{UNIX_MILLIS}][%t][%c{1}] %msg%n"/>
         </RandomAccessFile>
+        <RollingRandomAccessFile name="RollingRandomAccessFile"
+                                 fileName="logs/rolling_data.log"
+                                 filePattern="logs/rolling_data.%i.gz"
+                                 immediateFlush="false">
+            <PatternLayout pattern="[%level][%d{UNIX_MILLIS}][%t][%c{1}] %msg%n"/>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="10 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy fileIndex="nomax" />
+        </RollingRandomAccessFile >
     </Appenders>
     <Loggers>
         <Root level="info" includeLocation="false">
-            <AppenderRef ref="RandomAccessFile"/>
+<!--            <AppenderRef ref="RandomAccessFile"/>-->
+            <AppenderRef ref="RollingRandomAccessFile"/>
         </Root>
     </Loggers>
 </Configuration>
