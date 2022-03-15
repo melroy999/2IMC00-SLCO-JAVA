@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="debug">
+    <Appenders>
+<!--        <Console name="Console-Appender" target="SYSTEM_OUT">-->
+<!--            <PatternLayout>-->
+<!--                <pattern>-->
+<!--                    [%level][%d{ABSOLUTE_MICROS}][%t][%c{1}]: %msg%n-->
+<!--                </pattern>>-->
+<!--            </PatternLayout>-->
+<!--        </Console>-->
+        <!-- Async Loggers will auto-flush in batches, so switch off immediateFlush. -->
+        <RandomAccessFile name="RandomAccessFile" fileName="logs/data.log" immediateFlush="false" append="false">
+            <PatternLayout pattern="[%level][%d{ABSOLUTE_MICROS}][%t][%c{1}]: %msg%n"/>
+        </RandomAccessFile>
+    </Appenders>
+    <Loggers>
+        <Root level="info" includeLocation="false">
+            <AppenderRef ref="RandomAccessFile"/>
+        </Root>
+    </Loggers>
+</Configuration>
