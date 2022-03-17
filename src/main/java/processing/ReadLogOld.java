@@ -1,19 +1,20 @@
 package processing;
 
 import processing.processors.IProcessor;
-import processing.processors.TransitionCounter;
+import processing.processors.LogOrderCheck;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
-import java.time.*;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Scanner;
 import java.util.zip.GZIPInputStream;
 
-public class ReadLog {
+public class ReadLogOld {
     // The path to the log file.
     private final String targetFolder;
 
@@ -32,7 +33,7 @@ public class ReadLog {
     // The log messages often repeat--hence, keep a mapping to cache results with.
     private static final Map<String, String[]> MESSAGE_CACHE = new HashMap<>();
 
-    public ReadLog(String targetFolder, IProcessor[] processors, long warmupGracePeriodDuration) {
+    public ReadLogOld(String targetFolder, IProcessor[] processors, long warmupGracePeriodDuration) {
         this.targetFolder = targetFolder;
         this.processors = processors;
         this.warmupGracePeriodDuration = warmupGracePeriodDuration;
@@ -169,10 +170,10 @@ public class ReadLog {
     }
 
     public static void main(String[] args) {
-        ReadLog operation = new ReadLog(
-                "Elevator_2022-03-17T12.44.06.242499400Z",
+        ReadLogOld operation = new ReadLogOld(
+                "B_2022-03-17T12.27.13.538460200Z",
                 new IProcessor[]{
-                        new TransitionCounter()
+                        new LogOrderCheck()
                 },
                 0
         );

@@ -9,10 +9,10 @@ public interface IProcessor {
     /**
      * Process the given log entry.
      *
-     * @param header The header of the log entry.
+     * @param thread The name of the thread the log entry is from.
      * @param data The data contained within the body of the log entry.
      */
-    void process(String header, String[] data);
+    void process(String thread, String[] data);
 
     /**
      * Report the data gathered by the processor.

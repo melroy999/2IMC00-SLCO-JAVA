@@ -11,11 +11,11 @@ public class LogOrderCheck implements IProcessor {
     /**
      * Process the given log entry.
      *
-     * @param header The header of the log entry.
+     * @param thread The name of the thread the log entry is from.
      * @param data The data contained within the body of the log entry.
      */
     @Override
-    public void process(String header, String[] data) {
+    public void process(String thread, String[] data) {
         String message = data[0];
         int value = Integer.parseInt(message);
         if(value != expectedValue) {
