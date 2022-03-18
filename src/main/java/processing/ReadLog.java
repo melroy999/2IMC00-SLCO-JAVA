@@ -170,11 +170,11 @@ public class ReadLog {
 
     public static void main(String[] args) {
         ReadLog operation = new ReadLog(
-                "Elevator_2022-03-17T18.50.07.303606600Z",
+                "Elevator[T=20s]_2022-03-18T17.42.53.239759500Z",
                 new IProcessor[]{
                         new TransitionCounter()
                 },
-                0
+                10000
         );
 
         try {

@@ -125,6 +125,7 @@ public class TransitionCounter implements IProcessor {
                     ", entryCount=" + entryCount +
                     ", successCount=" + successCount +
                     ", failureCount=" + failureCount +
+                    ", success_rate=" + (successCount / (float) entryCount) +
                     '}';
         }
     }
@@ -149,6 +150,7 @@ public class TransitionCounter implements IProcessor {
                     "state=" + state +
                     ", entryCount=" + entryCount +
                     ", failureCount=" + failureCount +
+                    ", success_rate=" + (1 - failureCount / (float) entryCount) +
                     '}';
         }
     }
@@ -196,7 +198,7 @@ public class TransitionCounter implements IProcessor {
         switch (identifier) {
             case "D.O" -> entry.entryCount++;
             case "D.CF" -> entry.failureCount++;
-            default -> throw new Error("Unexpected identifier encountered");
+            // default -> throw new Error("Unexpected identifier encountered");
         }
     }
 
@@ -221,7 +223,7 @@ public class TransitionCounter implements IProcessor {
             case "T.O" -> entry.entryCount++;
             case "T.CS" -> entry.successCount++;
             case "T.CF" -> entry.failureCount++;
-            default -> throw new Error("Unexpected identifier encountered");
+            // default -> throw new Error("Unexpected identifier encountered");
         }
     }
 
