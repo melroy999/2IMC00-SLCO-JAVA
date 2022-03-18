@@ -3,11 +3,12 @@
     <Properties>
         <Property name="log_date">log_date</Property>
         <Property name="log_name">log_name</Property>
+        <Property name="log_settings">log_settings</Property>
     </Properties>
     <Appenders>
         <RollingRandomAccessFile name="RollingRandomAccessFile"
-                                 fileName="logs/${main:log_name}_${main:log_date}/data.log"
-                                 filePattern="logs/${main:log_name}_${main:log_date}/data.%i.gz"
+                                 fileName="logs/${main:log_name}${main:log_settings}_${main:log_date}/data.log"
+                                 filePattern="logs/${main:log_name}${main:log_settings}_${main:log_date}/data.%i.gz"
                                  immediateFlush="false"
                                  append="false">
             <PatternLayout pattern="%d{UNIX_MILLIS}_%t %msg%n"/>

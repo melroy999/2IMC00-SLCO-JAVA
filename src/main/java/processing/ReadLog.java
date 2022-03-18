@@ -170,7 +170,7 @@ public class ReadLog {
 
     public static void main(String[] args) {
         ReadLog operation = new ReadLog(
-                "Elevator_2022-03-17T12.44.06.242499400Z",
+                "Elevator_2022-03-17T18.50.07.303606600Z",
                 new IProcessor[]{
                         new TransitionCounter()
                 },
