@@ -987,5 +987,10 @@ public class Elevator {
         Elevator model = new Elevator();
         model.startThreads();
         model.joinThreads();
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }
