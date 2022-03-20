@@ -23,51 +23,88 @@ public class ReadLog {
     // Control the warmup grace period.
     private final long warmupGracePeriodDuration;
     private long startTime = -1;
+    private long logProcessingStartTime = -1;
     private boolean hasWarmedUp = false;
+
+    // Control the data interval system.
+    private final long intervalDuration;
+    private long intervalStartTime = -1;
 
     // Keep track of the number of lines processed.
     private int linesProcessed = 0;
     private int linesInWarmup = 0;
 
+    // Look for suspicious gaps.
+    private long lastTime = -1;
+    private long maxDifference = 0;
+
     // The log messages often repeat--hence, keep a mapping to cache results with.
     private static final Map<String, String[]> MESSAGE_CACHE = new HashMap<>();
 
-    public ReadLog(String targetFolder, IProcessor[] processors, long warmupGracePeriodDuration) {
+    public ReadLog(
+            String targetFolder, IProcessor[] processors, long warmupGracePeriodDuration, long intervalDuration
+    ) {
         this.targetFolder = targetFolder;
         this.processors = processors;
         this.warmupGracePeriodDuration = warmupGracePeriodDuration;
+        this.intervalDuration = intervalDuration;
     }
 
     /**
      * Java needs time to optimize code during runtime--hence, include a warm-up check.
      *
-     * @param timestamp The timestamp as a string.
+     * @param timestamp The unix timestamp.
      * @return true if the grace period is over, false otherwise.
      */
-    public boolean hasWarmedUp(String timestamp) {
-        // Get the current timestamp as an instant object.
-        long unixMilli = Long.parseLong(timestamp);
-
+    public boolean hasWarmedUp(long timestamp) {
         // Skip calculations if already warmed up.
         if(hasWarmedUp) {
             return true;
         }
 
         if (startTime == -1) {
-            startTime = unixMilli;
+            startTime = timestamp;
         }
 
         // Check how much time has passed and set the appropriate flags.
-        if (unixMilli - startTime >= warmupGracePeriodDuration) {
+        if (timestamp - startTime >= warmupGracePeriodDuration) {
             System.out.printf(
                     "Warmup grace period of %s milliseconds concluded, starting log processing.%n",
                     warmupGracePeriodDuration
             );
+            logProcessingStartTime = timestamp;
             hasWarmedUp = true;
             return true;
         }
         linesInWarmup++;
         return false;
+    }
+
+    /**
+     * Check if the processors should proceed to the next interval.
+     *
+     * @param timestamp The current timestamp.
+     */
+    public void checkCloseInterval(long timestamp) {
+        if(intervalDuration == -1) {
+            // Skip if no interval is given.
+            return;
+        }
+
+        if (intervalStartTime == -1) {
+            intervalStartTime = timestamp;
+        }
+
+        // Check if the processors should roll over to the next interval.
+        if (timestamp - intervalStartTime > intervalDuration) {
+            long start = intervalStartTime - logProcessingStartTime;
+            intervalStartTime += intervalDuration;
+            long end = intervalStartTime - logProcessingStartTime;
+            System.out.printf("Closing measurement interval [%s, %s).%n", start, end);
+            for(IProcessor processor : processors) {
+                processor.closeInterval(start, end);
+            }
+        }
     }
 
     /**
@@ -82,17 +119,38 @@ public class ReadLog {
 
         // Split the header component on an underscore to find the timestamp and thread name.
         index = components[0].indexOf("_");
-        String timestamp = components[0].substring(0, index);
+        long timestamp = Long.parseLong(components[0].substring(0, index));
         String thread = components[0].substring(index + 1);
+
+        if(lastTime == -1) {
+            lastTime = timestamp;
+        } else {
+            if(timestamp - lastTime > maxDifference) {
+                maxDifference = timestamp - lastTime;
+                if(timestamp - lastTime > 1) {
+                    System.out.printf(
+                            "Warning: big pause of %s ms detected between log entries.%n",
+                            timestamp - lastTime
+                    );
+                }
+            }
+            lastTime = timestamp;
+        }
 
         // Process the line.
         if(hasWarmedUp(timestamp)) {
+            // Check if the processors need to roll over to the next measurement interval.
+            checkCloseInterval(timestamp);
+
+            // Cache messages, since they are often identical.
             if(!MESSAGE_CACHE.containsKey(components[1])) {
                 MESSAGE_CACHE.put(components[1], components[1].split(" "));
             }
+
+            // Call the processors.
             String[] data = MESSAGE_CACHE.get(components[1]);
             for(IProcessor processor : processors) {
-                processor.process(thread, data);
+                processor.process(timestamp, thread, data);
             }
         }
         linesProcessed++;
@@ -150,8 +208,8 @@ public class ReadLog {
         // The last file is uncompressed and should be processed differently.
         processPlainFile();
         System.out.printf(
-                "Processed %s lines, with %s lines occurring within the warmup phase.%n",
-                linesProcessed, linesInWarmup
+                "Processed %s lines, with %s lines occurring within the warmup phase. Biggest pause was %s milliseconds.%n",
+                linesProcessed, linesInWarmup, maxDifference
         );
     }
 
@@ -170,10 +228,11 @@ public class ReadLog {
 
     public static void main(String[] args) {
         ReadLog operation = new ReadLog(
-                "Elevator[T=20s]_2022-03-18T17.42.53.239759500Z",
+                "Elevator[T=60s]_2022-03-19T22.56.22.597753900Z",
                 new IProcessor[]{
                         new TransitionCounter()
                 },
+                10000,
                 10000
         );
 

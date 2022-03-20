@@ -11,17 +11,28 @@ public class LogOrderCheck implements IProcessor {
     /**
      * Process the given log entry.
      *
+     * @param timestamp The unix timestamp the log entry is created on.
      * @param thread The name of the thread the log entry is from.
      * @param data The data contained within the body of the log entry.
      */
     @Override
-    public void process(String thread, String[] data) {
+    public void process(long timestamp, String thread, String[] data) {
         String message = data[0];
         int value = Integer.parseInt(message);
         if(value != expectedValue) {
             throw new Error("Order violation");
         }
         expectedValue = (expectedValue + 1) % NUMBER_OF_THREADS;
+    }
+
+    /**
+     * Notify the processor that the next data entries are within a new measurement interval.
+     *
+     * @param start The start of the logging period in milliseconds.
+     * @param end The end of the logging period in milliseconds.
+     */
+    public void closeInterval(long start, long end) {
+        // Do nothing.
     }
 
     /**

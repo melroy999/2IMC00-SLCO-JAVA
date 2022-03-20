@@ -145,17 +145,13 @@ public class Elevator {
 
             // SLCO expression wrapper | v > 0.
             private boolean t_idle_0_s_0_n_0() {
-                logger.info("T.CN GlobalClass cabin 0 idle mov 0 0");
-                logger.info("T.L GlobalClass cabin 0 idle mov 1 0 0");
                 lock_ids[0] = target_locks[0] = 1; // Acquire v
                 lockManager.acquire_locks(lock_ids, 1);
                 if(v > 0) {
-                    logger.info("T.L GlobalClass cabin 0 idle mov 0 0 1");
                     lock_ids[0] = target_locks[0]; // Release v
                     lockManager.release_locks(lock_ids, 1);
                     return true;
                 }
-                logger.info("T.L GlobalClass cabin 0 idle mov 0 0 1");
                 lock_ids[0] = target_locks[0]; // Release v
                 lockManager.release_locks(lock_ids, 1);
                 return false;
@@ -174,14 +170,11 @@ public class Elevator {
 
             // SLCO expression wrapper | t = p.
             private boolean t_mov_0_s_0_n_0() {
-                logger.info("T.CN GlobalClass cabin 0 mov open 0 0");
-                logger.info("T.L GlobalClass cabin 0 mov open 2 0 0");
                 lock_ids[0] = target_locks[0] = 0; // Acquire p
                 lockManager.acquire_locks(lock_ids, 1);
                 lock_ids[0] = target_locks[1] = 2; // Acquire t
                 lockManager.acquire_locks(lock_ids, 1);
                 if(t == p) {
-                    logger.info("T.L GlobalClass cabin 0 mov open 0 0 2");
                     lock_ids[0] = target_locks[0]; // Release p
                     lock_ids[1] = target_locks[1]; // Release t
                     lockManager.release_locks(lock_ids, 2);
@@ -203,9 +196,7 @@ public class Elevator {
 
             // SLCO expression wrapper | t < p.
             private boolean t_mov_1_s_0_n_0() {
-                logger.info("T.CN GlobalClass cabin 1 mov mov 0 0");
                 if(t < p) {
-                    logger.info("T.L GlobalClass cabin 1 mov mov 0 0 1");
                     lock_ids[0] = target_locks[1]; // Release t
                     lockManager.release_locks(lock_ids, 1);
                     return true;
@@ -221,9 +212,7 @@ public class Elevator {
                     return false;
                 }
                 // SLCO assignment | p := p - 1.
-                logger.info("T.A GlobalClass cabin 1 mov mov 1");
                 p = p - 1;
-                logger.info("T.L GlobalClass cabin 1 mov mov 0 0 1");
                 lock_ids[0] = target_locks[0]; // Release p
                 lockManager.release_locks(lock_ids, 1);
 
@@ -233,14 +222,11 @@ public class Elevator {
 
             // SLCO expression wrapper | t > p.
             private boolean t_mov_2_s_0_n_0() {
-                logger.info("T.CN GlobalClass cabin 2 mov mov 0 0");
                 if(t > p) {
-                    logger.info("T.L GlobalClass cabin 2 mov mov 0 0 1");
                     lock_ids[0] = target_locks[1]; // Release t
                     lockManager.release_locks(lock_ids, 1);
                     return true;
                 }
-                logger.info("T.L GlobalClass cabin 2 mov mov 0 0 2");
                 lock_ids[0] = target_locks[0]; // Release p
                 lock_ids[1] = target_locks[1]; // Release t
                 lockManager.release_locks(lock_ids, 2);
@@ -255,9 +241,7 @@ public class Elevator {
                     return false;
                 }
                 // SLCO assignment | p := p + 1.
-                logger.info("T.A GlobalClass cabin 2 mov mov 1");
                 p = p + 1;
-                logger.info("T.L GlobalClass cabin 2 mov mov 0 0 1");
                 lock_ids[0] = target_locks[0]; // Release p
                 lockManager.release_locks(lock_ids, 1);
 
@@ -272,24 +256,19 @@ public class Elevator {
                 // SLCO composite | [req[p] := 0; v := 0] -> [true; req[p] := 0; v := 0].
                 // (Superfluous) SLCO expression | true.
                 // SLCO assignment | req[p] := 0.
-                logger.info("T.A GlobalClass cabin 0 open idle 2");
-                logger.info("T.L GlobalClass cabin 0 open idle 3 0 0");
-                lock_ids[0] = target_locks[2] = 0; // Acquire p
+                lock_ids[0] = target_locks[1] = 0; // Acquire p
                 lockManager.acquire_locks(lock_ids, 1);
-                lock_ids[0] = target_locks[1] = 1; // Acquire v
+                lock_ids[0] = target_locks[2] = 1; // Acquire v
                 lockManager.acquire_locks(lock_ids, 1);
                 lock_ids[0] = target_locks[0] = 3 + p; // Acquire req[p]
                 lockManager.acquire_locks(lock_ids, 1);
                 req[p] = (0) & 0xff;
-                logger.info("T.L GlobalClass cabin 0 open idle 0 0 2");
                 lock_ids[0] = target_locks[0]; // Release req[p]
-                lock_ids[1] = target_locks[2]; // Release p
+                lock_ids[1] = target_locks[1]; // Release p
                 lockManager.release_locks(lock_ids, 2);
                 // SLCO assignment | v := 0.
-                logger.info("T.A GlobalClass cabin 0 open idle 3");
                 v = (0) & 0xff;
-                logger.info("T.L GlobalClass cabin 0 open idle 0 0 1");
-                lock_ids[0] = target_locks[1]; // Release v
+                lock_ids[0] = target_locks[2]; // Release v
                 lockManager.release_locks(lock_ids, 1);
 
                 currentState = GlobalClass_cabinThread.States.idle;
@@ -412,14 +391,11 @@ public class Elevator {
 
             // SLCO expression wrapper | req[0] = 0.
             private boolean t_read_0_s_0_n_0() {
-                logger.info("T.CN GlobalClass environment 0 read read 0 0");
-                logger.info("T.L GlobalClass environment 0 read read 1 0 0");
                 lock_ids[0] = target_locks[0] = 3 + 0; // Acquire req[0]
                 lockManager.acquire_locks(lock_ids, 1);
                 if(req[0] == 0) {
                     return true;
                 }
-                logger.info("T.L GlobalClass environment 0 read read 0 0 1");
                 lock_ids[0] = target_locks[0]; // Release req[0]
                 lockManager.release_locks(lock_ids, 1);
                 return false;
@@ -433,9 +409,7 @@ public class Elevator {
                     return false;
                 }
                 // SLCO assignment | req[0] := 1.
-                logger.info("T.A GlobalClass environment 0 read read 1");
                 req[0] = (1) & 0xff;
-                logger.info("T.L GlobalClass environment 0 read read 0 0 1");
                 lock_ids[0] = target_locks[0]; // Release req[0]
                 lockManager.release_locks(lock_ids, 1);
 
@@ -445,14 +419,11 @@ public class Elevator {
 
             // SLCO expression wrapper | req[1] = 0.
             private boolean t_read_1_s_0_n_0() {
-                logger.info("T.CN GlobalClass environment 1 read read 0 0");
-                logger.info("T.L GlobalClass environment 1 read read 1 0 0");
                 lock_ids[0] = target_locks[1] = 3 + 1; // Acquire req[1]
                 lockManager.acquire_locks(lock_ids, 1);
                 if(req[1] == 0) {
                     return true;
                 }
-                logger.info("T.L GlobalClass environment 1 read read 0 0 1");
                 lock_ids[0] = target_locks[1]; // Release req[1]
                 lockManager.release_locks(lock_ids, 1);
                 return false;
@@ -466,9 +437,7 @@ public class Elevator {
                     return false;
                 }
                 // SLCO assignment | req[1] := 1.
-                logger.info("T.A GlobalClass environment 1 read read 1");
                 req[1] = (1) & 0xff;
-                logger.info("T.L GlobalClass environment 1 read read 0 0 1");
                 lock_ids[0] = target_locks[1]; // Release req[1]
                 lockManager.release_locks(lock_ids, 1);
 
@@ -478,14 +447,11 @@ public class Elevator {
 
             // SLCO expression wrapper | req[2] = 0.
             private boolean t_read_2_s_0_n_0() {
-                logger.info("T.CN GlobalClass environment 2 read read 0 0");
-                logger.info("T.L GlobalClass environment 2 read read 1 0 0");
                 lock_ids[0] = target_locks[2] = 3 + 2; // Acquire req[2]
                 lockManager.acquire_locks(lock_ids, 1);
                 if(req[2] == 0) {
                     return true;
                 }
-                logger.info("T.L GlobalClass environment 2 read read 0 0 1");
                 lock_ids[0] = target_locks[2]; // Release req[2]
                 lockManager.release_locks(lock_ids, 1);
                 return false;
@@ -499,9 +465,7 @@ public class Elevator {
                     return false;
                 }
                 // SLCO assignment | req[2] := 1.
-                logger.info("T.A GlobalClass environment 2 read read 1");
                 req[2] = (1) & 0xff;
-                logger.info("T.L GlobalClass environment 2 read read 0 0 1");
                 lock_ids[0] = target_locks[2]; // Release req[2]
                 lockManager.release_locks(lock_ids, 1);
 
@@ -511,14 +475,11 @@ public class Elevator {
 
             // SLCO expression wrapper | req[3] = 0.
             private boolean t_read_3_s_0_n_0() {
-                logger.info("T.CN GlobalClass environment 3 read read 0 0");
-                logger.info("T.L GlobalClass environment 3 read read 1 0 0");
                 lock_ids[0] = target_locks[3] = 3 + 3; // Acquire req[3]
                 lockManager.acquire_locks(lock_ids, 1);
                 if(req[3] == 0) {
                     return true;
                 }
-                logger.info("T.L GlobalClass environment 3 read read 0 0 1");
                 lock_ids[0] = target_locks[3]; // Release req[3]
                 lockManager.release_locks(lock_ids, 1);
                 return false;
@@ -532,9 +493,7 @@ public class Elevator {
                     return false;
                 }
                 // SLCO assignment | req[3] := 1.
-                logger.info("T.A GlobalClass environment 3 read read 1");
                 req[3] = (1) & 0xff;
-                logger.info("T.L GlobalClass environment 3 read read 0 0 1");
                 lock_ids[0] = target_locks[3]; // Release req[3]
                 lockManager.release_locks(lock_ids, 1);
 
@@ -639,17 +598,13 @@ public class Elevator {
 
             // SLCO expression wrapper | v = 0.
             private boolean t_wait_0_s_0_n_0() {
-                logger.info("T.CN GlobalClass controller 0 wait work 0 0");
-                logger.info("T.L GlobalClass controller 0 wait work 1 0 0");
                 lock_ids[0] = target_locks[0] = 1; // Acquire v
                 lockManager.acquire_locks(lock_ids, 1);
                 if(v == 0) {
-                    logger.info("T.L GlobalClass controller 0 wait work 0 0 1");
                     lock_ids[0] = target_locks[0]; // Release v
                     lockManager.release_locks(lock_ids, 1);
                     return true;
                 }
-                logger.info("T.L GlobalClass controller 0 wait work 0 0 1");
                 lock_ids[0] = target_locks[0]; // Release v
                 lockManager.release_locks(lock_ids, 1);
                 return false;
@@ -663,12 +618,9 @@ public class Elevator {
                     return false;
                 }
                 // SLCO assignment | t := t + (2 * ldir) - 1.
-                logger.info("T.A GlobalClass controller 0 wait work 1");
-                logger.info("T.L GlobalClass controller 0 wait work 1 0 0");
                 lock_ids[0] = target_locks[1] = 2; // Acquire t
                 lockManager.acquire_locks(lock_ids, 1);
                 t = t + (2 * ldir) - 1;
-                logger.info("T.L GlobalClass controller 0 wait work 0 0 1");
                 lock_ids[0] = target_locks[1]; // Release t
                 lockManager.release_locks(lock_ids, 1);
 
@@ -678,12 +630,9 @@ public class Elevator {
 
             // SLCO expression wrapper | t < 0.
             private boolean t_work_0_s_0_n_0() {
-                logger.info("T.CN GlobalClass controller 0 work wait 0 0");
-                logger.info("T.L GlobalClass controller 0 work wait 1 0 0");
                 lock_ids[0] = target_locks[0] = 2; // Acquire t
                 lockManager.acquire_locks(lock_ids, 1);
                 if(t < 0) {
-                    logger.info("T.L GlobalClass controller 0 work wait 0 0 1");
                     lock_ids[0] = target_locks[0]; // Release t
                     lockManager.release_locks(lock_ids, 1);
                     return true;
@@ -693,9 +642,7 @@ public class Elevator {
 
             // SLCO expression wrapper | t = 4.
             private boolean t_work_0_s_0_n_1() {
-                logger.info("T.CN GlobalClass controller 0 work wait 0 1");
                 if(t == 4) {
-                    logger.info("T.L GlobalClass controller 0 work wait 0 0 1");
                     lock_ids[0] = target_locks[0]; // Release t
                     lockManager.release_locks(lock_ids, 1);
                     return true;
@@ -711,7 +658,6 @@ public class Elevator {
                     return false;
                 }
                 // SLCO assignment | ldir := 1 - ldir.
-                logger.info("T.A GlobalClass controller 0 work wait 1");
                 ldir = (1 - ldir) & 0xff;
 
                 currentState = GlobalClass_controllerThread.States.wait;
@@ -720,41 +666,35 @@ public class Elevator {
 
             // SLCO expression wrapper | t >= 0 and t < 4.
             private boolean t_work_1_s_0_n_0() {
-                logger.info("T.CN GlobalClass controller 1 work done 0 0");
                 if(t >= 0 && t < 4) {
                     return true;
                 }
-                logger.info("T.L GlobalClass controller 1 work done 4 0 0");
-                lock_ids[0] = target_locks[1] = 3 + 1; // Acquire req[1]
+                lock_ids[0] = target_locks[1] = 3 + 3; // Acquire req[3]
                 lock_ids[1] = target_locks[2] = 3 + 0; // Acquire req[0]
-                lock_ids[2] = target_locks[3] = 3 + 2; // Acquire req[2]
-                lock_ids[3] = target_locks[4] = 3 + 3; // Acquire req[3]
+                lock_ids[2] = target_locks[3] = 3 + 1; // Acquire req[1]
+                lock_ids[3] = target_locks[4] = 3 + 2; // Acquire req[2]
                 lockManager.acquire_locks(lock_ids, 4);
                 return false;
             }
 
             // SLCO expression wrapper | req[t] = 1.
             private boolean t_work_1_s_0_n_1() {
-                logger.info("T.CN GlobalClass controller 1 work done 0 1");
-                logger.info("T.L GlobalClass controller 1 work done 5 0 0");
-                lock_ids[0] = target_locks[1] = 3 + 1; // Acquire req[1]
+                lock_ids[0] = target_locks[1] = 3 + 3; // Acquire req[3]
                 lock_ids[1] = target_locks[2] = 3 + 0; // Acquire req[0]
-                lock_ids[2] = target_locks[3] = 3 + 2; // Acquire req[2]
-                lock_ids[3] = target_locks[4] = 3 + 3; // Acquire req[3]
+                lock_ids[2] = target_locks[3] = 3 + 1; // Acquire req[1]
+                lock_ids[3] = target_locks[4] = 3 + 2; // Acquire req[2]
                 lock_ids[4] = target_locks[5] = 3 + t; // Acquire req[t]
                 lockManager.acquire_locks(lock_ids, 5);
                 if(req[t] == 1) {
-                    logger.info("T.L GlobalClass controller 1 work done 0 0 6");
                     lock_ids[0] = target_locks[0]; // Release t
-                    lock_ids[1] = target_locks[1]; // Release req[1]
+                    lock_ids[1] = target_locks[1]; // Release req[3]
                     lock_ids[2] = target_locks[2]; // Release req[0]
-                    lock_ids[3] = target_locks[3]; // Release req[2]
-                    lock_ids[4] = target_locks[4]; // Release req[3]
+                    lock_ids[3] = target_locks[3]; // Release req[1]
+                    lock_ids[4] = target_locks[4]; // Release req[2]
                     lock_ids[5] = target_locks[5]; // Release req[t]
                     lockManager.release_locks(lock_ids, 6);
                     return true;
                 }
-                logger.info("T.L GlobalClass controller 1 work done 0 0 1");
                 lock_ids[0] = target_locks[5]; // Release req[t]
                 lockManager.release_locks(lock_ids, 1);
                 return false;
@@ -773,54 +713,47 @@ public class Elevator {
 
             // SLCO expression wrapper | t >= 0.
             private boolean t_work_2_s_0_n_0() {
-                logger.info("T.CN GlobalClass controller 2 work work 0 0");
                 if(t >= 0) {
                     return true;
                 }
-                logger.info("T.L GlobalClass controller 2 work work 0 0 5");
                 lock_ids[0] = target_locks[0]; // Release t
-                lock_ids[1] = target_locks[1]; // Release req[1]
+                lock_ids[1] = target_locks[1]; // Release req[3]
                 lock_ids[2] = target_locks[2]; // Release req[0]
-                lock_ids[3] = target_locks[3]; // Release req[2]
-                lock_ids[4] = target_locks[4]; // Release req[3]
+                lock_ids[3] = target_locks[3]; // Release req[1]
+                lock_ids[4] = target_locks[4]; // Release req[2]
                 lockManager.release_locks(lock_ids, 5);
                 return false;
             }
 
             // SLCO expression wrapper | t < 4.
             private boolean t_work_2_s_0_n_1() {
-                logger.info("T.CN GlobalClass controller 2 work work 0 1");
                 if(t < 4) {
                     return true;
                 }
-                logger.info("T.L GlobalClass controller 2 work work 0 0 5");
                 lock_ids[0] = target_locks[0]; // Release t
-                lock_ids[1] = target_locks[1]; // Release req[1]
+                lock_ids[1] = target_locks[1]; // Release req[3]
                 lock_ids[2] = target_locks[2]; // Release req[0]
-                lock_ids[3] = target_locks[3]; // Release req[2]
-                lock_ids[4] = target_locks[4]; // Release req[3]
+                lock_ids[3] = target_locks[3]; // Release req[1]
+                lock_ids[4] = target_locks[4]; // Release req[2]
                 lockManager.release_locks(lock_ids, 5);
                 return false;
             }
 
             // SLCO expression wrapper | req[t] = 0.
             private boolean t_work_2_s_0_n_2() {
-                logger.info("T.CN GlobalClass controller 2 work work 0 2");
                 if(req[t] == 0) {
-                    logger.info("T.L GlobalClass controller 2 work work 0 0 4");
-                    lock_ids[0] = target_locks[1]; // Release req[1]
+                    lock_ids[0] = target_locks[1]; // Release req[3]
                     lock_ids[1] = target_locks[2]; // Release req[0]
-                    lock_ids[2] = target_locks[3]; // Release req[2]
-                    lock_ids[3] = target_locks[4]; // Release req[3]
+                    lock_ids[2] = target_locks[3]; // Release req[1]
+                    lock_ids[3] = target_locks[4]; // Release req[2]
                     lockManager.release_locks(lock_ids, 4);
                     return true;
                 }
-                logger.info("T.L GlobalClass controller 2 work work 0 0 5");
                 lock_ids[0] = target_locks[0]; // Release t
-                lock_ids[1] = target_locks[1]; // Release req[1]
+                lock_ids[1] = target_locks[1]; // Release req[3]
                 lock_ids[2] = target_locks[2]; // Release req[0]
-                lock_ids[3] = target_locks[3]; // Release req[2]
-                lock_ids[4] = target_locks[4]; // Release req[3]
+                lock_ids[3] = target_locks[3]; // Release req[1]
+                lock_ids[4] = target_locks[4]; // Release req[2]
                 lockManager.release_locks(lock_ids, 5);
                 return false;
             }
@@ -833,9 +766,7 @@ public class Elevator {
                     return false;
                 }
                 // SLCO assignment | t := t + (2 * ldir) - 1.
-                logger.info("T.A GlobalClass controller 2 work work 1");
                 t = t + (2 * ldir) - 1;
-                logger.info("T.L GlobalClass controller 2 work work 0 0 1");
                 lock_ids[0] = target_locks[0]; // Release t
                 lockManager.release_locks(lock_ids, 1);
 
@@ -848,12 +779,9 @@ public class Elevator {
                 // (Superfluous) SLCO expression | true.
 
                 // SLCO assignment | [v := 1] -> v := 1.
-                logger.info("T.A GlobalClass controller 0 done wait 1");
-                logger.info("T.L GlobalClass controller 0 done wait 1 0 0");
                 lock_ids[0] = target_locks[0] = 1; // Acquire v
                 lockManager.acquire_locks(lock_ids, 1);
                 v = (1) & 0xff;
-                logger.info("T.L GlobalClass controller 0 done wait 0 0 1");
                 lock_ids[0] = target_locks[0]; // Release v
                 lockManager.release_locks(lock_ids, 1);
 
@@ -987,8 +915,10 @@ public class Elevator {
         Elevator model = new Elevator();
         model.startThreads();
         model.joinThreads();
+
+        // Give the logger time to finish asynchronous tasks.
         try {
-            Thread.sleep(1000);
+            Thread.sleep(2000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

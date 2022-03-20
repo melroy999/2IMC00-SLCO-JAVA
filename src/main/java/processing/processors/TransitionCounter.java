@@ -1,15 +1,17 @@
 package processing.processors;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Measure statistics on how often a particular transition is fired.
  */
 public class TransitionCounter implements IProcessor {
     // Objects holding the data for each individual thread.
-    private final Map<String, ThreadData> threadDataMap = new HashMap<>();
+    private Map<String, ThreadData> threadDataMap = new HashMap<>();
+
+    // Data measured within the given interval.
+    private final Map<String, Map<String, ThreadData>> intervalMap = new HashMap<>();
+    private final List<String> intervals = new ArrayList<>();
 
     /**
      * Data container for data gathered for a given thread.
@@ -158,11 +160,12 @@ public class TransitionCounter implements IProcessor {
     /**
      * Process the given log entry.
      *
+     * @param timestamp The unix timestamp the log entry is created on.
      * @param thread The name of the thread the log entry is from.
      * @param data   The data contained within the body of the log entry.
      */
     @Override
-    public void process(String thread, String[] data) {
+    public void process(long timestamp, String thread, String[] data) {
         // Find the data container associated with the thread.
         if(!threadDataMap.containsKey(thread)) {
             threadDataMap.put(thread, new ThreadData(thread, data));
@@ -178,6 +181,19 @@ public class TransitionCounter implements IProcessor {
         } else {
             throw new Error("Unexpected identifier encountered");
         }
+    }
+
+    /**
+     * Notify the processor that the next data entries are within a new measurement interval.
+     *
+     * @param start The start of the logging period in milliseconds.
+     * @param end The end of the logging period in milliseconds.
+     */
+    public void closeInterval(long start, long end) {
+        String interval = "[" + start + ", " + end + ")";
+        intervalMap.put(interval, threadDataMap);
+        intervals.add(interval);
+        threadDataMap = new HashMap<>();
     }
 
     /**
@@ -234,10 +250,14 @@ public class TransitionCounter implements IProcessor {
      */
     @Override
     public void reportResults(String path) {
-        String[] keys = threadDataMap.keySet().toArray(new String[0]);
-        Arrays.sort(keys);
-        for(String key : keys) {
-            threadDataMap.get(key).reportData();
+        for(String interval : intervals) {
+            System.out.printf("[TransitionCounter] Data for interval %s:%n", interval);
+            Map<String, ThreadData> threadDataMap = intervalMap.get(interval);
+            String[] keys = threadDataMap.keySet().toArray(new String[0]);
+            Arrays.sort(keys);
+            for(String key : keys) {
+                threadDataMap.get(key).reportData();
+            }
         }
     }
 }
