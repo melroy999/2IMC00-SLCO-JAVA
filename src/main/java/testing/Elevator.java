@@ -6,6 +6,9 @@ import java.time.Duration;
 import java.time.Instant;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.Appender;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.appender.RollingRandomAccessFileAppender;
 import org.apache.logging.log4j.core.lookup.MainMapLookup;
 import java.time.format.DateTimeFormatter;
 import java.time.Instant;
@@ -915,6 +918,19 @@ public class Elevator {
         Elevator model = new Elevator();
         model.startThreads();
         model.joinThreads();
+
+        // Give the logger time to finish asynchronous tasks.
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        LoggerContext context = LoggerContext.getContext(false);
+        Appender appender = context.getConfiguration().getAppender("RollingRandomAccessFile");
+        if (appender instanceof RollingRandomAccessFileAppender) {
+            ((RollingRandomAccessFileAppender) appender).getManager().rollover();
+        }
 
         // Give the logger time to finish asynchronous tasks.
         try {

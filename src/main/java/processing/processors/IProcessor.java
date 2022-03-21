@@ -1,7 +1,5 @@
 package processing.processors;
 
-import java.time.Instant;
-
 /**
  * An interface for classes that process log entries.
  */

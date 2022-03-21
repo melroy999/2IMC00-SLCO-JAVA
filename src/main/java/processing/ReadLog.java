@@ -1,7 +1,8 @@
 package processing;
 
 import processing.processors.IProcessor;
-import processing.processors.TransitionCounter;
+import processing.processors.TransitionCountProcessor;
+import processing.processors.throughput.ThroughputProcessor;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -33,10 +34,6 @@ public class ReadLog {
     // Keep track of the number of lines processed.
     private int linesProcessed = 0;
     private int linesInWarmup = 0;
-
-    // Look for suspicious gaps.
-    private long lastTime = -1;
-    private long maxDifference = 0;
 
     // The log messages often repeat--hence, keep a mapping to cache results with.
     private static final Map<String, String[]> MESSAGE_CACHE = new HashMap<>();
@@ -122,21 +119,6 @@ public class ReadLog {
         long timestamp = Long.parseLong(components[0].substring(0, index));
         String thread = components[0].substring(index + 1);
 
-        if(lastTime == -1) {
-            lastTime = timestamp;
-        } else {
-            if(timestamp - lastTime > maxDifference) {
-                maxDifference = timestamp - lastTime;
-                if(timestamp - lastTime > 1) {
-                    System.out.printf(
-                            "Warning: big pause of %s ms detected between log entries.%n",
-                            timestamp - lastTime
-                    );
-                }
-            }
-            lastTime = timestamp;
-        }
-
         // Process the line.
         if(hasWarmedUp(timestamp)) {
             // Check if the processors need to roll over to the next measurement interval.
@@ -208,8 +190,8 @@ public class ReadLog {
         // The last file is uncompressed and should be processed differently.
         processPlainFile();
         System.out.printf(
-                "Processed %s lines, with %s lines occurring within the warmup phase. Biggest pause was %s milliseconds.%n",
-                linesProcessed, linesInWarmup, maxDifference
+                "Processed %s lines, with %s lines occurring within the warmup phase.%n",
+                linesProcessed, linesInWarmup
         );
     }
 
@@ -228,9 +210,10 @@ public class ReadLog {
 
     public static void main(String[] args) {
         ReadLog operation = new ReadLog(
-                "Elevator[T=60s]_2022-03-19T22.56.22.597753900Z",
+                "Elevator[T=60s]_2022-03-21T15.27.30.020620900Z",
                 new IProcessor[]{
-                        new TransitionCounter()
+                        new TransitionCountProcessor(),
+                        new ThroughputProcessor()
                 },
                 10000,
                 10000
@@ -245,4 +228,24 @@ public class ReadLog {
             e.printStackTrace();
         }
     }
+
+    // TODO:
+    //  - An observation that is made is that the big pauses seems to be closely correlated to log files being generated
+    //  during logging--the longer pauses occur at regular intervals, and there are roughly as many log files.
+    //  - Increasing the log file rollover policy's size increases the pause duration by an equivalent amount. This does
+    //  seem to imply that the bottleneck is caused by the RollingRandomAccessFile appender. Moving to a faster storage
+    //  medium does not cause a meaningful speed in performance (about 25%, SSD to m.2), which implies that the primary
+    //  cause is the compression of the log files during rollover.
+    //  - The operating system, and windows defender in particular, has been investigated as an alternative culprit.
+    //  Excluding the project folder did result in fewer unexpected gaps (700 to approximately 200). Nevertheless, the
+    //  bottleneck described above persists, which implies that there are multiple causes of the irregularities.
+    //      - This behavior is difficult to reproduce--the count varies wildly, with values observed in [90, 400]. Gaps
+    //      do seem to occur more regularly when other tasks are performed on the same machine.
+    //      - The same test methodology has been repeated with the folder not being excluded: this yielded ~220 gaps,
+    //      which implies that excluding the folder in windows defender does not make a noticeable difference.
+    //  - Another aspect that is important to note is that the timestamp is generated at the moment of writing. Hence,
+    //  it could theoretically be possible that the program does run continuously, with the pauses occurring within the
+    //  logging aspect. For this to be true, all threads would need to halt at the same moment.
+    // TODO:
+    //  - Verify if all threads have the same time gaps.
 }

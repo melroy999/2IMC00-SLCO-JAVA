@@ -5,7 +5,7 @@ import java.util.*;
 /**
  * Measure statistics on how often a particular transition is fired.
  */
-public class TransitionCounter implements IProcessor {
+public class TransitionCountProcessor implements IProcessor {
     // Objects holding the data for each individual thread.
     private Map<String, ThreadData> threadDataMap = new HashMap<>();
 

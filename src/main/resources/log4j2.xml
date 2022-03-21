@@ -11,7 +11,7 @@
                                  fileName="logs/${main:log_name}${main:log_settings}_${main:log_date}/data.log"
                                  filePattern="logs/${main:log_name}${main:log_settings}_${main:log_date}/data.%i.gz"
                                  immediateFlush="false"
-                                 append="true">
+                                 append="false">
             <PatternLayout pattern="%d{UNIX_MILLIS}_%t %msg%n"/>
             <Policies>
                 <SizeBasedTriggeringPolicy size="100 MB"/>
