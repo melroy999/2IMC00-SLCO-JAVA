@@ -5,21 +5,21 @@ package processing.processors;
  */
 public interface IProcessor {
     /**
-     * Process the given log entry.
+     * Initialize the processor using the given information.
      *
-     * @param timestamp The unix timestamp the log entry is created on.
-     * @param thread The name of the thread the log entry is from.
-     * @param data The data contained within the body of the log entry.
+     * @param nrOfFiles The number of log files to be processed.
      */
-    void process(long timestamp, String thread, String[] data);
+    void initialize(int nrOfFiles);
 
     /**
-     * Notify the processor that the next data entries are within a new measurement interval.
+     * Process the given log entry.
      *
-     * @param start The start of the logging period in milliseconds.
-     * @param end The end of the logging period in milliseconds.
+     * @param fileNumber The log file number.
+     * @param timestamp  The unix timestamp the log entry is created on.
+     * @param thread     The name of the thread the log entry is from.
+     * @param data       The data contained within the body of the log entry.
      */
-    void closeInterval(long start, long end);
+    void process(int fileNumber, long timestamp, String thread, String[] data);
 
     /**
      * Report the data gathered by the processor.

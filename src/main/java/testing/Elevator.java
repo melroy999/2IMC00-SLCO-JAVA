@@ -342,7 +342,7 @@ public class Elevator {
             // Main state machine loop.
             private void exec() {
                 Instant time_start = Instant.now();
-                while(Duration.between(time_start, Instant.now()).toSeconds() < 60) {
+                while(Duration.between(time_start, Instant.now()).toSeconds() < 15) {
                     switch(currentState) {
                         case idle -> exec_idle();
                         case mov -> exec_mov();
@@ -543,7 +543,7 @@ public class Elevator {
             // Main state machine loop.
             private void exec() {
                 Instant time_start = Instant.now();
-                while(Duration.between(time_start, Instant.now()).toSeconds() < 60) {
+                while(Duration.between(time_start, Instant.now()).toSeconds() < 15) {
                     switch(currentState) {
                         case read -> exec_read();
                     }
@@ -856,7 +856,7 @@ public class Elevator {
             // Main state machine loop.
             private void exec() {
                 Instant time_start = Instant.now();
-                while(Duration.between(time_start, Instant.now()).toSeconds() < 60) {
+                while(Duration.between(time_start, Instant.now()).toSeconds() < 15) {
                     switch(currentState) {
                         case wait -> exec_wait();
                         case work -> exec_work();
