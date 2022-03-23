@@ -11,6 +11,11 @@ public class EntryDataProcessor implements IProcessor {
     // Keep entries for each individual log file.
     private EntryData[] files;
 
+    // Keep track of the last encountered timestamp.
+    private long lastTimestamp = -1;
+
+    private String lastMessage = "";
+
     static class EntryData {
         // The number of log entries contained within the log file.
         private int nrOfLines = 0;
@@ -19,32 +24,11 @@ public class EntryDataProcessor implements IProcessor {
         private long startTime = -1;
         private long endTime = 0;
 
+        // Time gaps found within the entries.
+        private final List<String> gaps = new ArrayList<>();
+
         // Track the number of entries per time unit (milliseconds).
         private final Map<Long, Integer> timeUnitToCount = new HashMap<>();
-
-        /**
-         * Get a comma separated list containing timestamp ranges in which no data is is available.
-         *
-         * @return A comma separated list containing timestamp ranges in which no data is is available.
-         */
-        public String getMissingRanges() {
-            List<String> ranges = new ArrayList<>();
-            long previous = startTime;
-            Long[] timestamps = timeUnitToCount.keySet().toArray(new Long[0]);
-            Arrays.sort(timestamps);
-            for(long timestamp : timestamps) {
-                if(timestamp - previous > 1) {
-                    ranges.add(String.format(
-                            "[%s, %s]: %s",
-                            previous + 1 - startTime,
-                            timestamp - 1 - startTime,
-                            timestamp - previous - 2)
-                    );
-                }
-                previous = timestamp;
-            }
-            return String.join(", ", ranges);
-        }
 
         @Override
         public String toString() {
@@ -54,8 +38,8 @@ public class EntryDataProcessor implements IProcessor {
                     ", endTime=" + endTime +
                     ", duration=" + (endTime - startTime) +
                     ", rate=" + nrOfLines / (endTime - startTime) +
-                    ", activity=" + (float) timeUnitToCount.size() / (endTime - startTime) +
-                    ", missing_ranges=[" + getMissingRanges() + "]" +
+                    ", activity=" + (float) timeUnitToCount.size() / (endTime - startTime + 1) +
+                    ", missing_ranges=[" + String.join(", ", gaps) + "]" +
                     '}';
         }
     }
@@ -103,6 +87,23 @@ public class EntryDataProcessor implements IProcessor {
         // Increment the count for the time unit and the total number of lines.
         entry.timeUnitToCount.merge(timestamp, 1, Integer::sum);
         entry.nrOfLines++;
+
+        // Detect gaps in the data flow.
+        if(lastTimestamp != -1 && timestamp - lastTimestamp > 1) {
+            entry.gaps.add(String.format(
+                    "[%s, %s]: %s",
+                    lastTimestamp + 1 - entry.startTime,
+                    timestamp - 1 - entry.startTime,
+                    timestamp - lastTimestamp - 2)
+            );
+        }
+
+        // Keep track of the last encountered timestamp.
+        if(lastTimestamp > timestamp) {
+            throw new Error("Warning: order preservation assumption violated.");
+        }
+        lastTimestamp = timestamp;
+        lastMessage = String.format("%s %s %s %s", fileNumber, timestamp, thread, String.join(" ", data));
     }
 
     /**
