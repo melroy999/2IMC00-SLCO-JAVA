@@ -24,7 +24,7 @@ public class Elevator {
     static {
         String log_date = DateTimeFormatter.ISO_INSTANT.format(Instant.now()).replaceAll(":", ".");
         String log_name = "Elevator";
-        String log_settings = "[T=60s]";
+        String log_settings = "[SLL,T=60s]";
         MainMapLookup.setMainArguments("log_date", log_date, "log_settings", log_settings, "log_name", log_name);
         logger = LogManager.getLogger();
     }
@@ -45,12 +45,6 @@ public class Elevator {
                         (char) 0
                 )
         };
-    }
-
-    private static long counter = 0;
-
-    public static synchronized long getMessageId() {
-        return counter++;
     }
 
     // Lock class to handle locks of global variables
@@ -104,6 +98,9 @@ public class Elevator {
         private volatile int p;
         private volatile int v;
 
+        // Additional supporting variables.
+        private final Object lock = new Object();
+
         GlobalClass(int[] req, int t, int p, int v) {
             // Create a lock manager.
             LockManager lockManager = new LockManager(7);
@@ -147,29 +144,15 @@ public class Elevator {
             GlobalClass_cabinThread(LockManager lockManagerInstance) {
                 currentState = GlobalClass_cabinThread.States.idle;
                 lockManager = lockManagerInstance;
-                lock_ids = new int[2];
-                target_locks = new int[3];
+                lock_ids = new int[0];
+                target_locks = new int[0];
                 random = new Random();
-            }
-
-            // SLCO expression wrapper | v > 0.
-            private boolean t_idle_0_s_0_n_0() {
-                lock_ids[0] = target_locks[0] = 1; // Acquire v
-                lockManager.acquire_locks(lock_ids, 1);
-                if(v > 0) {
-                    lock_ids[0] = target_locks[0]; // Release v
-                    lockManager.release_locks(lock_ids, 1);
-                    return true;
-                }
-                lock_ids[0] = target_locks[0]; // Release v
-                lockManager.release_locks(lock_ids, 1);
-                return false;
             }
 
             // SLCO transition (p:0, id:0) | idle -> mov | v > 0.
             private boolean execute_transition_idle_0() {
                 // SLCO expression | v > 0.
-                if(!(t_idle_0_s_0_n_0())) {
+                if(!(v > 0)) {
                     return false;
                 }
 
@@ -177,25 +160,10 @@ public class Elevator {
                 return true;
             }
 
-            // SLCO expression wrapper | t = p.
-            private boolean t_mov_0_s_0_n_0() {
-                lock_ids[0] = target_locks[1] = 0; // Acquire p
-                lockManager.acquire_locks(lock_ids, 1);
-                lock_ids[0] = target_locks[0] = 2; // Acquire t
-                lockManager.acquire_locks(lock_ids, 1);
-                if(t == p) {
-                    lock_ids[0] = target_locks[0]; // Release t
-                    lock_ids[1] = target_locks[1]; // Release p
-                    lockManager.release_locks(lock_ids, 2);
-                    return true;
-                }
-                return false;
-            }
-
             // SLCO transition (p:0, id:0) | mov -> open | t = p.
             private boolean execute_transition_mov_0() {
                 // SLCO expression | t = p.
-                if(!(t_mov_0_s_0_n_0())) {
+                if(!(t == p)) {
                     return false;
                 }
 
@@ -203,56 +171,29 @@ public class Elevator {
                 return true;
             }
 
-            // SLCO expression wrapper | t < p.
-            private boolean t_mov_1_s_0_n_0() {
-                if(t < p) {
-                    lock_ids[0] = target_locks[0]; // Release t
-                    lockManager.release_locks(lock_ids, 1);
-                    return true;
-                }
-                return false;
-            }
-
             // SLCO transition (p:0, id:1) | mov -> mov | [t < p; p := p - 1].
             private boolean execute_transition_mov_1() {
                 // SLCO composite | [t < p; p := p - 1].
                 // SLCO expression | t < p.
-                if(!(t_mov_1_s_0_n_0())) {
+                if(!(t < p)) {
                     return false;
                 }
                 // SLCO assignment | p := p - 1.
                 p = p - 1;
-                lock_ids[0] = target_locks[1]; // Release p
-                lockManager.release_locks(lock_ids, 1);
 
                 currentState = GlobalClass_cabinThread.States.mov;
                 return true;
-            }
-
-            // SLCO expression wrapper | t > p.
-            private boolean t_mov_2_s_0_n_0() {
-                if(t > p) {
-                    lock_ids[0] = target_locks[0]; // Release t
-                    lockManager.release_locks(lock_ids, 1);
-                    return true;
-                }
-                lock_ids[0] = target_locks[0]; // Release t
-                lock_ids[1] = target_locks[1]; // Release p
-                lockManager.release_locks(lock_ids, 2);
-                return false;
             }
 
             // SLCO transition (p:0, id:2) | mov -> mov | [t > p; p := p + 1].
             private boolean execute_transition_mov_2() {
                 // SLCO composite | [t > p; p := p + 1].
                 // SLCO expression | t > p.
-                if(!(t_mov_2_s_0_n_0())) {
+                if(!(t > p)) {
                     return false;
                 }
                 // SLCO assignment | p := p + 1.
                 p = p + 1;
-                lock_ids[0] = target_locks[1]; // Release p
-                lockManager.release_locks(lock_ids, 1);
 
                 currentState = GlobalClass_cabinThread.States.mov;
                 return true;
@@ -265,20 +206,9 @@ public class Elevator {
                 // SLCO composite | [req[p] := 0; v := 0] -> [true; req[p] := 0; v := 0].
                 // (Superfluous) SLCO expression | true.
                 // SLCO assignment | req[p] := 0.
-                lock_ids[0] = target_locks[2] = 0; // Acquire p
-                lockManager.acquire_locks(lock_ids, 1);
-                lock_ids[0] = target_locks[1] = 1; // Acquire v
-                lockManager.acquire_locks(lock_ids, 1);
-                lock_ids[0] = target_locks[0] = 3 + p; // Acquire req[p]
-                lockManager.acquire_locks(lock_ids, 1);
                 req[p] = (0) & 0xff;
-                lock_ids[0] = target_locks[0]; // Release req[p]
-                lock_ids[1] = target_locks[2]; // Release p
-                lockManager.release_locks(lock_ids, 2);
                 // SLCO assignment | v := 0.
                 v = (0) & 0xff;
-                lock_ids[0] = target_locks[1]; // Release v
-                lockManager.release_locks(lock_ids, 1);
 
                 currentState = GlobalClass_cabinThread.States.idle;
                 return true;
@@ -286,68 +216,78 @@ public class Elevator {
 
             // Attempt to fire a transition starting in state idle.
             private void exec_idle() {
-                logger.info("GlobalClass.cabin.idle.O" + "." + getMessageId());
+                logger.info("GlobalClass.cabin.idle.O");
                 // [SEQ.START]
-                // SLCO transition (p:0, id:0) | idle -> mov | v > 0.
-                logger.info("GlobalClass.cabin.idle.mov.0.O" + "." + getMessageId());
-                if(execute_transition_idle_0()) {
-                    logger.info("GlobalClass.cabin.idle.mov.0.CS" + "." + getMessageId());
-                    logger.info("GlobalClass.cabin.idle.CS" + "." + getMessageId());
-                    return;
+                synchronized(lock) {
+                    // SLCO transition (p:0, id:0) | idle -> mov | v > 0.
+                    logger.info("GlobalClass.cabin.idle.mov.0.O");
+                    if(execute_transition_idle_0()) {
+                        logger.info("GlobalClass.cabin.idle.mov.0.CS");
+                        logger.info("GlobalClass.cabin.idle.CS");
+                        return;
+                    }
+                    logger.info("GlobalClass.cabin.idle.mov.0.CF");
                 }
-                logger.info("GlobalClass.cabin.idle.mov.0.CF" + "." + getMessageId());
                 // [SEQ.END]
-                logger.info("GlobalClass.cabin.idle.CF" + "." + getMessageId());
+                logger.info("GlobalClass.cabin.idle.CF");
             }
 
             // Attempt to fire a transition starting in state mov.
             private void exec_mov() {
-                logger.info("GlobalClass.cabin.mov.O" + "." + getMessageId());
+                logger.info("GlobalClass.cabin.mov.O");
                 // [SEQ.START]
                 // [DET.START]
-                // SLCO transition (p:0, id:0) | mov -> open | t = p.
-                logger.info("GlobalClass.cabin.mov.open.0.O" + "." + getMessageId());
-                if(execute_transition_mov_0()) {
-                    logger.info("GlobalClass.cabin.mov.open.0.CS" + "." + getMessageId());
-                    logger.info("GlobalClass.cabin.mov.CS" + "." + getMessageId());
-                    return;
+                synchronized(lock) {
+                    // SLCO transition (p:0, id:0) | mov -> open | t = p.
+                    logger.info("GlobalClass.cabin.mov.open.0.O");
+                    if(execute_transition_mov_0()) {
+                        logger.info("GlobalClass.cabin.mov.open.0.CS");
+                        logger.info("GlobalClass.cabin.mov.CS");
+                        return;
+                    }
+                    logger.info("GlobalClass.cabin.mov.open.0.CF");
                 }
-                logger.info("GlobalClass.cabin.mov.open.0.CF" + "." + getMessageId());
-                // SLCO transition (p:0, id:1) | mov -> mov | [t < p; p := p - 1].
-                logger.info("GlobalClass.cabin.mov.mov.1.O" + "." + getMessageId());
-                if(execute_transition_mov_1()) {
-                    logger.info("GlobalClass.cabin.mov.mov.1.CS" + "." + getMessageId());
-                    logger.info("GlobalClass.cabin.mov.CS" + "." + getMessageId());
-                    return;
+                synchronized(lock) {
+                    // SLCO transition (p:0, id:1) | mov -> mov | [t < p; p := p - 1].
+                    logger.info("GlobalClass.cabin.mov.mov.1.O");
+                    if(execute_transition_mov_1()) {
+                        logger.info("GlobalClass.cabin.mov.mov.1.CS");
+                        logger.info("GlobalClass.cabin.mov.CS");
+                        return;
+                    }
+                    logger.info("GlobalClass.cabin.mov.mov.1.CF");
                 }
-                logger.info("GlobalClass.cabin.mov.mov.1.CF" + "." + getMessageId());
-                // SLCO transition (p:0, id:2) | mov -> mov | [t > p; p := p + 1].
-                logger.info("GlobalClass.cabin.mov.mov.2.O" + "." + getMessageId());
-                if(execute_transition_mov_2()) {
-                    logger.info("GlobalClass.cabin.mov.mov.2.CS" + "." + getMessageId());
-                    logger.info("GlobalClass.cabin.mov.CS" + "." + getMessageId());
-                    return;
+                synchronized(lock) {
+                    // SLCO transition (p:0, id:2) | mov -> mov | [t > p; p := p + 1].
+                    logger.info("GlobalClass.cabin.mov.mov.2.O");
+                    if(execute_transition_mov_2()) {
+                        logger.info("GlobalClass.cabin.mov.mov.2.CS");
+                        logger.info("GlobalClass.cabin.mov.CS");
+                        return;
+                    }
+                    logger.info("GlobalClass.cabin.mov.mov.2.CF");
                 }
-                logger.info("GlobalClass.cabin.mov.mov.2.CF" + "." + getMessageId());
                 // [DET.END]
                 // [SEQ.END]
-                logger.info("GlobalClass.cabin.mov.CF" + "." + getMessageId());
+                logger.info("GlobalClass.cabin.mov.CF");
             }
 
             // Attempt to fire a transition starting in state open.
             private void exec_open() {
-                logger.info("GlobalClass.cabin.open.O" + "." + getMessageId());
+                logger.info("GlobalClass.cabin.open.O");
                 // [SEQ.START]
-                // SLCO transition (p:0, id:0) | open -> idle | true | [true; req[p] := 0; v := 0].
-                logger.info("GlobalClass.cabin.open.idle.0.O" + "." + getMessageId());
-                if(execute_transition_open_0()) {
-                    logger.info("GlobalClass.cabin.open.idle.0.CS" + "." + getMessageId());
-                    logger.info("GlobalClass.cabin.open.CS" + "." + getMessageId());
-                    return;
+                synchronized(lock) {
+                    // SLCO transition (p:0, id:0) | open -> idle | true | [true; req[p] := 0; v := 0].
+                    logger.info("GlobalClass.cabin.open.idle.0.O");
+                    if(execute_transition_open_0()) {
+                        logger.info("GlobalClass.cabin.open.idle.0.CS");
+                        logger.info("GlobalClass.cabin.open.CS");
+                        return;
+                    }
+                    logger.info("GlobalClass.cabin.open.idle.0.CF");
                 }
-                logger.info("GlobalClass.cabin.open.idle.0.CF" + "." + getMessageId());
                 // [SEQ.END]
-                logger.info("GlobalClass.cabin.open.CF" + "." + getMessageId());
+                logger.info("GlobalClass.cabin.open.CF");
             }
 
             // Main state machine loop.
@@ -398,118 +338,62 @@ public class Elevator {
             GlobalClass_environmentThread(LockManager lockManagerInstance) {
                 currentState = GlobalClass_environmentThread.States.read;
                 lockManager = lockManagerInstance;
-                lock_ids = new int[1];
-                target_locks = new int[4];
+                lock_ids = new int[0];
+                target_locks = new int[0];
                 random = new Random();
-            }
-
-            // SLCO expression wrapper | req[0] = 0.
-            private boolean t_read_0_s_0_n_0() {
-                lock_ids[0] = target_locks[0] = 3 + 0; // Acquire req[0]
-                lockManager.acquire_locks(lock_ids, 1);
-                if(req[0] == 0) {
-                    return true;
-                }
-                lock_ids[0] = target_locks[0]; // Release req[0]
-                lockManager.release_locks(lock_ids, 1);
-                return false;
             }
 
             // SLCO transition (p:0, id:0) | read -> read | [req[0] = 0; req[0] := 1].
             private boolean execute_transition_read_0() {
                 // SLCO composite | [req[0] = 0; req[0] := 1].
                 // SLCO expression | req[0] = 0.
-                if(!(t_read_0_s_0_n_0())) {
+                if(!(req[0] == 0)) {
                     return false;
                 }
                 // SLCO assignment | req[0] := 1.
                 req[0] = (1) & 0xff;
-                lock_ids[0] = target_locks[0]; // Release req[0]
-                lockManager.release_locks(lock_ids, 1);
 
                 currentState = GlobalClass_environmentThread.States.read;
                 return true;
-            }
-
-            // SLCO expression wrapper | req[1] = 0.
-            private boolean t_read_1_s_0_n_0() {
-                lock_ids[0] = target_locks[1] = 3 + 1; // Acquire req[1]
-                lockManager.acquire_locks(lock_ids, 1);
-                if(req[1] == 0) {
-                    return true;
-                }
-                lock_ids[0] = target_locks[1]; // Release req[1]
-                lockManager.release_locks(lock_ids, 1);
-                return false;
             }
 
             // SLCO transition (p:0, id:1) | read -> read | [req[1] = 0; req[1] := 1].
             private boolean execute_transition_read_1() {
                 // SLCO composite | [req[1] = 0; req[1] := 1].
                 // SLCO expression | req[1] = 0.
-                if(!(t_read_1_s_0_n_0())) {
+                if(!(req[1] == 0)) {
                     return false;
                 }
                 // SLCO assignment | req[1] := 1.
                 req[1] = (1) & 0xff;
-                lock_ids[0] = target_locks[1]; // Release req[1]
-                lockManager.release_locks(lock_ids, 1);
 
                 currentState = GlobalClass_environmentThread.States.read;
                 return true;
-            }
-
-            // SLCO expression wrapper | req[2] = 0.
-            private boolean t_read_2_s_0_n_0() {
-                lock_ids[0] = target_locks[2] = 3 + 2; // Acquire req[2]
-                lockManager.acquire_locks(lock_ids, 1);
-                if(req[2] == 0) {
-                    return true;
-                }
-                lock_ids[0] = target_locks[2]; // Release req[2]
-                lockManager.release_locks(lock_ids, 1);
-                return false;
             }
 
             // SLCO transition (p:0, id:2) | read -> read | [req[2] = 0; req[2] := 1].
             private boolean execute_transition_read_2() {
                 // SLCO composite | [req[2] = 0; req[2] := 1].
                 // SLCO expression | req[2] = 0.
-                if(!(t_read_2_s_0_n_0())) {
+                if(!(req[2] == 0)) {
                     return false;
                 }
                 // SLCO assignment | req[2] := 1.
                 req[2] = (1) & 0xff;
-                lock_ids[0] = target_locks[2]; // Release req[2]
-                lockManager.release_locks(lock_ids, 1);
 
                 currentState = GlobalClass_environmentThread.States.read;
                 return true;
-            }
-
-            // SLCO expression wrapper | req[3] = 0.
-            private boolean t_read_3_s_0_n_0() {
-                lock_ids[0] = target_locks[3] = 3 + 3; // Acquire req[3]
-                lockManager.acquire_locks(lock_ids, 1);
-                if(req[3] == 0) {
-                    return true;
-                }
-                lock_ids[0] = target_locks[3]; // Release req[3]
-                lockManager.release_locks(lock_ids, 1);
-                return false;
             }
 
             // SLCO transition (p:0, id:3) | read -> read | [req[3] = 0; req[3] := 1].
             private boolean execute_transition_read_3() {
                 // SLCO composite | [req[3] = 0; req[3] := 1].
                 // SLCO expression | req[3] = 0.
-                if(!(t_read_3_s_0_n_0())) {
+                if(!(req[3] == 0)) {
                     return false;
                 }
                 // SLCO assignment | req[3] := 1.
                 req[3] = (1) & 0xff;
-                lock_ids[0] = target_locks[3]; // Release req[3]
-                lockManager.release_locks(lock_ids, 1);
 
                 currentState = GlobalClass_environmentThread.States.read;
                 return true;
@@ -517,42 +401,50 @@ public class Elevator {
 
             // Attempt to fire a transition starting in state read.
             private void exec_read() {
-                logger.info("GlobalClass.environment.read.O" + "." + getMessageId());
+                logger.info("GlobalClass.environment.read.O");
                 // [SEQ.START]
-                // SLCO transition (p:0, id:0) | read -> read | [req[0] = 0; req[0] := 1].
-                logger.info("GlobalClass.environment.read.read.0.O" + "." + getMessageId());
-                if(execute_transition_read_0()) {
-                    logger.info("GlobalClass.environment.read.read.0.CS" + "." + getMessageId());
-                    logger.info("GlobalClass.environment.read.CS" + "." + getMessageId());
-                    return;
+                synchronized(lock) {
+                    // SLCO transition (p:0, id:0) | read -> read | [req[0] = 0; req[0] := 1].
+                    logger.info("GlobalClass.environment.read.read.0.O");
+                    if(execute_transition_read_0()) {
+                        logger.info("GlobalClass.environment.read.read.0.CS");
+                        logger.info("GlobalClass.environment.read.CS");
+                        return;
+                    }
+                    logger.info("GlobalClass.environment.read.read.0.CF");
                 }
-                logger.info("GlobalClass.environment.read.read.0.CF" + "." + getMessageId());
-                // SLCO transition (p:0, id:1) | read -> read | [req[1] = 0; req[1] := 1].
-                logger.info("GlobalClass.environment.read.read.1.O" + "." + getMessageId());
-                if(execute_transition_read_1()) {
-                    logger.info("GlobalClass.environment.read.read.1.CS" + "." + getMessageId());
-                    logger.info("GlobalClass.environment.read.CS" + "." + getMessageId());
-                    return;
+                synchronized(lock) {
+                    // SLCO transition (p:0, id:1) | read -> read | [req[1] = 0; req[1] := 1].
+                    logger.info("GlobalClass.environment.read.read.1.O");
+                    if(execute_transition_read_1()) {
+                        logger.info("GlobalClass.environment.read.read.1.CS");
+                        logger.info("GlobalClass.environment.read.CS");
+                        return;
+                    }
+                    logger.info("GlobalClass.environment.read.read.1.CF");
                 }
-                logger.info("GlobalClass.environment.read.read.1.CF" + "." + getMessageId());
-                // SLCO transition (p:0, id:2) | read -> read | [req[2] = 0; req[2] := 1].
-                logger.info("GlobalClass.environment.read.read.2.O" + "." + getMessageId());
-                if(execute_transition_read_2()) {
-                    logger.info("GlobalClass.environment.read.read.2.CS" + "." + getMessageId());
-                    logger.info("GlobalClass.environment.read.CS" + "." + getMessageId());
-                    return;
+                synchronized(lock) {
+                    // SLCO transition (p:0, id:2) | read -> read | [req[2] = 0; req[2] := 1].
+                    logger.info("GlobalClass.environment.read.read.2.O");
+                    if(execute_transition_read_2()) {
+                        logger.info("GlobalClass.environment.read.read.2.CS");
+                        logger.info("GlobalClass.environment.read.CS");
+                        return;
+                    }
+                    logger.info("GlobalClass.environment.read.read.2.CF");
                 }
-                logger.info("GlobalClass.environment.read.read.2.CF" + "." + getMessageId());
-                // SLCO transition (p:0, id:3) | read -> read | [req[3] = 0; req[3] := 1].
-                logger.info("GlobalClass.environment.read.read.3.O" + "." + getMessageId());
-                if(execute_transition_read_3()) {
-                    logger.info("GlobalClass.environment.read.read.3.CS" + "." + getMessageId());
-                    logger.info("GlobalClass.environment.read.CS" + "." + getMessageId());
-                    return;
+                synchronized(lock) {
+                    // SLCO transition (p:0, id:3) | read -> read | [req[3] = 0; req[3] := 1].
+                    logger.info("GlobalClass.environment.read.read.3.O");
+                    if(execute_transition_read_3()) {
+                        logger.info("GlobalClass.environment.read.read.3.CS");
+                        logger.info("GlobalClass.environment.read.CS");
+                        return;
+                    }
+                    logger.info("GlobalClass.environment.read.read.3.CF");
                 }
-                logger.info("GlobalClass.environment.read.read.3.CF" + "." + getMessageId());
                 // [SEQ.END]
-                logger.info("GlobalClass.environment.read.CF" + "." + getMessageId());
+                logger.info("GlobalClass.environment.read.CF");
             }
 
             // Main state machine loop.
@@ -606,73 +498,33 @@ public class Elevator {
             GlobalClass_controllerThread(LockManager lockManagerInstance) {
                 currentState = GlobalClass_controllerThread.States.wait;
                 lockManager = lockManagerInstance;
-                lock_ids = new int[6];
-                target_locks = new int[6];
+                lock_ids = new int[0];
+                target_locks = new int[0];
                 random = new Random();
 
                 // Variable instantiations.
                 ldir = (char) 0;
             }
 
-            // SLCO expression wrapper | v = 0.
-            private boolean t_wait_0_s_0_n_0() {
-                lock_ids[0] = target_locks[0] = 1; // Acquire v
-                lockManager.acquire_locks(lock_ids, 1);
-                if(v == 0) {
-                    lock_ids[0] = target_locks[0]; // Release v
-                    lockManager.release_locks(lock_ids, 1);
-                    return true;
-                }
-                lock_ids[0] = target_locks[0]; // Release v
-                lockManager.release_locks(lock_ids, 1);
-                return false;
-            }
-
             // SLCO transition (p:0, id:0) | wait -> work | [v = 0; t := t + (2 * ldir) - 1].
             private boolean execute_transition_wait_0() {
                 // SLCO composite | [v = 0; t := t + (2 * ldir) - 1].
                 // SLCO expression | v = 0.
-                if(!(t_wait_0_s_0_n_0())) {
+                if(!(v == 0)) {
                     return false;
                 }
                 // SLCO assignment | t := t + (2 * ldir) - 1.
-                lock_ids[0] = target_locks[1] = 2; // Acquire t
-                lockManager.acquire_locks(lock_ids, 1);
                 t = t + (2 * ldir) - 1;
-                lock_ids[0] = target_locks[1]; // Release t
-                lockManager.release_locks(lock_ids, 1);
 
                 currentState = GlobalClass_controllerThread.States.work;
                 return true;
-            }
-
-            // SLCO expression wrapper | t < 0.
-            private boolean t_work_0_s_0_n_0() {
-                lock_ids[0] = target_locks[0] = 2; // Acquire t
-                lockManager.acquire_locks(lock_ids, 1);
-                if(t < 0) {
-                    lock_ids[0] = target_locks[0]; // Release t
-                    lockManager.release_locks(lock_ids, 1);
-                    return true;
-                }
-                return false;
-            }
-
-            // SLCO expression wrapper | t = 4.
-            private boolean t_work_0_s_0_n_1() {
-                if(t == 4) {
-                    lock_ids[0] = target_locks[0]; // Release t
-                    lockManager.release_locks(lock_ids, 1);
-                    return true;
-                }
-                return false;
             }
 
             // SLCO transition (p:0, id:0) | work -> wait | [t < 0 or t = 4; ldir := 1 - ldir].
             private boolean execute_transition_work_0() {
                 // SLCO composite | [t < 0 or t = 4; ldir := 1 - ldir].
                 // SLCO expression | t < 0 or t = 4.
-                if(!(t_work_0_s_0_n_0() || t_work_0_s_0_n_1())) {
+                if(!(t < 0 || t == 4)) {
                     return false;
                 }
                 // SLCO assignment | ldir := 1 - ldir.
@@ -682,46 +534,10 @@ public class Elevator {
                 return true;
             }
 
-            // SLCO expression wrapper | t >= 0 and t < 4.
-            private boolean t_work_1_s_0_n_0() {
-                if(t >= 0 && t < 4) {
-                    return true;
-                }
-                lock_ids[0] = target_locks[1] = 3 + 0; // Acquire req[0]
-                lock_ids[1] = target_locks[2] = 3 + 3; // Acquire req[3]
-                lock_ids[2] = target_locks[3] = 3 + 2; // Acquire req[2]
-                lock_ids[3] = target_locks[4] = 3 + 1; // Acquire req[1]
-                lockManager.acquire_locks(lock_ids, 4);
-                return false;
-            }
-
-            // SLCO expression wrapper | req[t] = 1.
-            private boolean t_work_1_s_0_n_1() {
-                lock_ids[0] = target_locks[1] = 3 + 0; // Acquire req[0]
-                lock_ids[1] = target_locks[2] = 3 + 3; // Acquire req[3]
-                lock_ids[2] = target_locks[3] = 3 + 2; // Acquire req[2]
-                lock_ids[3] = target_locks[4] = 3 + 1; // Acquire req[1]
-                lock_ids[4] = target_locks[5] = 3 + t; // Acquire req[t]
-                lockManager.acquire_locks(lock_ids, 5);
-                if(req[t] == 1) {
-                    lock_ids[0] = target_locks[0]; // Release t
-                    lock_ids[1] = target_locks[1]; // Release req[0]
-                    lock_ids[2] = target_locks[2]; // Release req[3]
-                    lock_ids[3] = target_locks[3]; // Release req[2]
-                    lock_ids[4] = target_locks[4]; // Release req[1]
-                    lock_ids[5] = target_locks[5]; // Release req[t]
-                    lockManager.release_locks(lock_ids, 6);
-                    return true;
-                }
-                lock_ids[0] = target_locks[5]; // Release req[t]
-                lockManager.release_locks(lock_ids, 1);
-                return false;
-            }
-
             // SLCO transition (p:0, id:1) | work -> done | t >= 0 and t < 4 and req[t] = 1.
             private boolean execute_transition_work_1() {
                 // SLCO expression | t >= 0 and t < 4 and req[t] = 1.
-                if(!(t_work_1_s_0_n_0() && t_work_1_s_0_n_1())) {
+                if(!(t >= 0 && t < 4 && req[t] == 1)) {
                     return false;
                 }
 
@@ -729,64 +545,15 @@ public class Elevator {
                 return true;
             }
 
-            // SLCO expression wrapper | t >= 0.
-            private boolean t_work_2_s_0_n_0() {
-                if(t >= 0) {
-                    return true;
-                }
-                lock_ids[0] = target_locks[0]; // Release t
-                lock_ids[1] = target_locks[1]; // Release req[0]
-                lock_ids[2] = target_locks[2]; // Release req[3]
-                lock_ids[3] = target_locks[3]; // Release req[2]
-                lock_ids[4] = target_locks[4]; // Release req[1]
-                lockManager.release_locks(lock_ids, 5);
-                return false;
-            }
-
-            // SLCO expression wrapper | t < 4.
-            private boolean t_work_2_s_0_n_1() {
-                if(t < 4) {
-                    return true;
-                }
-                lock_ids[0] = target_locks[0]; // Release t
-                lock_ids[1] = target_locks[1]; // Release req[0]
-                lock_ids[2] = target_locks[2]; // Release req[3]
-                lock_ids[3] = target_locks[3]; // Release req[2]
-                lock_ids[4] = target_locks[4]; // Release req[1]
-                lockManager.release_locks(lock_ids, 5);
-                return false;
-            }
-
-            // SLCO expression wrapper | req[t] = 0.
-            private boolean t_work_2_s_0_n_2() {
-                if(req[t] == 0) {
-                    lock_ids[0] = target_locks[1]; // Release req[0]
-                    lock_ids[1] = target_locks[2]; // Release req[3]
-                    lock_ids[2] = target_locks[3]; // Release req[2]
-                    lock_ids[3] = target_locks[4]; // Release req[1]
-                    lockManager.release_locks(lock_ids, 4);
-                    return true;
-                }
-                lock_ids[0] = target_locks[0]; // Release t
-                lock_ids[1] = target_locks[1]; // Release req[0]
-                lock_ids[2] = target_locks[2]; // Release req[3]
-                lock_ids[3] = target_locks[3]; // Release req[2]
-                lock_ids[4] = target_locks[4]; // Release req[1]
-                lockManager.release_locks(lock_ids, 5);
-                return false;
-            }
-
             // SLCO transition (p:0, id:2) | work -> work | [t >= 0 and t < 4 and req[t] = 0; t := t + (2 * ldir) - 1].
             private boolean execute_transition_work_2() {
                 // SLCO composite | [t >= 0 and t < 4 and req[t] = 0; t := t + (2 * ldir) - 1].
                 // SLCO expression | t >= 0 and t < 4 and req[t] = 0.
-                if(!(t_work_2_s_0_n_0() && t_work_2_s_0_n_1() && t_work_2_s_0_n_2())) {
+                if(!(t >= 0 && t < 4 && req[t] == 0)) {
                     return false;
                 }
                 // SLCO assignment | t := t + (2 * ldir) - 1.
                 t = t + (2 * ldir) - 1;
-                lock_ids[0] = target_locks[0]; // Release t
-                lockManager.release_locks(lock_ids, 1);
 
                 currentState = GlobalClass_controllerThread.States.work;
                 return true;
@@ -797,11 +564,7 @@ public class Elevator {
                 // (Superfluous) SLCO expression | true.
 
                 // SLCO assignment | [v := 1] -> v := 1.
-                lock_ids[0] = target_locks[0] = 1; // Acquire v
-                lockManager.acquire_locks(lock_ids, 1);
                 v = (1) & 0xff;
-                lock_ids[0] = target_locks[0]; // Release v
-                lockManager.release_locks(lock_ids, 1);
 
                 currentState = GlobalClass_controllerThread.States.wait;
                 return true;
@@ -809,68 +572,78 @@ public class Elevator {
 
             // Attempt to fire a transition starting in state wait.
             private void exec_wait() {
-                logger.info("GlobalClass.controller.wait.O" + "." + getMessageId());
+                logger.info("GlobalClass.controller.wait.O");
                 // [SEQ.START]
-                // SLCO transition (p:0, id:0) | wait -> work | [v = 0; t := t + (2 * ldir) - 1].
-                logger.info("GlobalClass.controller.wait.work.0.O" + "." + getMessageId());
-                if(execute_transition_wait_0()) {
-                    logger.info("GlobalClass.controller.wait.work.0.CS" + "." + getMessageId());
-                    logger.info("GlobalClass.controller.wait.CS" + "." + getMessageId());
-                    return;
+                synchronized(lock) {
+                    // SLCO transition (p:0, id:0) | wait -> work | [v = 0; t := t + (2 * ldir) - 1].
+                    logger.info("GlobalClass.controller.wait.work.0.O");
+                    if(execute_transition_wait_0()) {
+                        logger.info("GlobalClass.controller.wait.work.0.CS");
+                        logger.info("GlobalClass.controller.wait.CS");
+                        return;
+                    }
+                    logger.info("GlobalClass.controller.wait.work.0.CF");
                 }
-                logger.info("GlobalClass.controller.wait.work.0.CF" + "." + getMessageId());
                 // [SEQ.END]
-                logger.info("GlobalClass.controller.wait.CF" + "." + getMessageId());
+                logger.info("GlobalClass.controller.wait.CF");
             }
 
             // Attempt to fire a transition starting in state work.
             private void exec_work() {
-                logger.info("GlobalClass.controller.work.O" + "." + getMessageId());
+                logger.info("GlobalClass.controller.work.O");
                 // [SEQ.START]
                 // [DET.START]
-                // SLCO transition (p:0, id:0) | work -> wait | [t < 0 or t = 4; ldir := 1 - ldir].
-                logger.info("GlobalClass.controller.work.wait.0.O" + "." + getMessageId());
-                if(execute_transition_work_0()) {
-                    logger.info("GlobalClass.controller.work.wait.0.CS" + "." + getMessageId());
-                    logger.info("GlobalClass.controller.work.CS" + "." + getMessageId());
-                    return;
+                synchronized(lock) {
+                    // SLCO transition (p:0, id:0) | work -> wait | [t < 0 or t = 4; ldir := 1 - ldir].
+                    logger.info("GlobalClass.controller.work.wait.0.O");
+                    if(execute_transition_work_0()) {
+                        logger.info("GlobalClass.controller.work.wait.0.CS");
+                        logger.info("GlobalClass.controller.work.CS");
+                        return;
+                    }
+                    logger.info("GlobalClass.controller.work.wait.0.CF");
                 }
-                logger.info("GlobalClass.controller.work.wait.0.CF" + "." + getMessageId());
-                // SLCO transition (p:0, id:1) | work -> done | t >= 0 and t < 4 and req[t] = 1.
-                logger.info("GlobalClass.controller.work.done.1.O" + "." + getMessageId());
-                if(execute_transition_work_1()) {
-                    logger.info("GlobalClass.controller.work.done.1.CS" + "." + getMessageId());
-                    logger.info("GlobalClass.controller.work.CS" + "." + getMessageId());
-                    return;
+                synchronized(lock) {
+                    // SLCO transition (p:0, id:1) | work -> done | t >= 0 and t < 4 and req[t] = 1.
+                    logger.info("GlobalClass.controller.work.done.1.O");
+                    if(execute_transition_work_1()) {
+                        logger.info("GlobalClass.controller.work.done.1.CS");
+                        logger.info("GlobalClass.controller.work.CS");
+                        return;
+                    }
+                    logger.info("GlobalClass.controller.work.done.1.CF");
                 }
-                logger.info("GlobalClass.controller.work.done.1.CF" + "." + getMessageId());
-                // SLCO transition (p:0, id:2) | work -> work | [t >= 0 and t < 4 and req[t] = 0; t := t + (2 * ldir) - 1].
-                logger.info("GlobalClass.controller.work.work.2.O" + "." + getMessageId());
-                if(execute_transition_work_2()) {
-                    logger.info("GlobalClass.controller.work.work.2.CS" + "." + getMessageId());
-                    logger.info("GlobalClass.controller.work.CS" + "." + getMessageId());
-                    return;
+                synchronized(lock) {
+                    // SLCO transition (p:0, id:2) | work -> work | [t >= 0 and t < 4 and req[t] = 0; t := t + (2 * ldir) - 1].
+                    logger.info("GlobalClass.controller.work.work.2.O");
+                    if(execute_transition_work_2()) {
+                        logger.info("GlobalClass.controller.work.work.2.CS");
+                        logger.info("GlobalClass.controller.work.CS");
+                        return;
+                    }
+                    logger.info("GlobalClass.controller.work.work.2.CF");
                 }
-                logger.info("GlobalClass.controller.work.work.2.CF" + "." + getMessageId());
                 // [DET.END]
                 // [SEQ.END]
-                logger.info("GlobalClass.controller.work.CF" + "." + getMessageId());
+                logger.info("GlobalClass.controller.work.CF");
             }
 
             // Attempt to fire a transition starting in state done.
             private void exec_done() {
-                logger.info("GlobalClass.controller.done.O" + "." + getMessageId());
+                logger.info("GlobalClass.controller.done.O");
                 // [SEQ.START]
-                // SLCO transition (p:0, id:0) | done -> wait | true | v := 1.
-                logger.info("GlobalClass.controller.done.wait.0.O" + "." + getMessageId());
-                if(execute_transition_done_0()) {
-                    logger.info("GlobalClass.controller.done.wait.0.CS" + "." + getMessageId());
-                    logger.info("GlobalClass.controller.done.CS" + "." + getMessageId());
-                    return;
+                synchronized(lock) {
+                    // SLCO transition (p:0, id:0) | done -> wait | true | v := 1.
+                    logger.info("GlobalClass.controller.done.wait.0.O");
+                    if(execute_transition_done_0()) {
+                        logger.info("GlobalClass.controller.done.wait.0.CS");
+                        logger.info("GlobalClass.controller.done.CS");
+                        return;
+                    }
+                    logger.info("GlobalClass.controller.done.wait.0.CF");
                 }
-                logger.info("GlobalClass.controller.done.wait.0.CF" + "." + getMessageId());
                 // [SEQ.END]
-                logger.info("GlobalClass.controller.done.CF" + "." + getMessageId());
+                logger.info("GlobalClass.controller.done.CF");
             }
 
             // Main state machine loop.

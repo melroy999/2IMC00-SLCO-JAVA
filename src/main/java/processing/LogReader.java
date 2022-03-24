@@ -1,14 +1,14 @@
 package processing;
 
 import processing.processors.IProcessor;
-import processing.processors.filedata.EntryDataProcessor;
-import processing.processors.filedata.ThreadDataProcessor;
+import processing.processors.filedata.LogFileEntryProcessor;
+import processing.processors.filedata.LogFileEntrySubProcessor;
+import processing.processors.filedata.LogFileMessageProcessor;
+import processing.processors.filedata.LogFileMessageSubProcessor;
 
 import java.io.*;
 import java.nio.file.Paths;
 import java.time.*;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 import java.util.zip.GZIPInputStream;
 
@@ -25,9 +25,6 @@ public class LogReader {
     // The current log file number. Note that the count starts at zero instead of one.
     // Moreover, the non-compressed file should be empty and is hence not included in this count.
     private int currentLogFileId = 0;
-
-    // The log messages often repeat--hence, keep a mapping to cache results with.
-    private static final Map<String, String[]> MESSAGE_CACHE = new HashMap<>();
 
     public LogReader(String targetFolder, IProcessor[] processors) {
         // Gather target data.
@@ -56,13 +53,8 @@ public class LogReader {
         long timestamp = Long.parseLong(components[0].substring(0, index));
         String thread = components[0].substring(index + 1);
 
-        // Cache messages, since they are often identical.
-        if(!MESSAGE_CACHE.containsKey(components[1])) {
-            MESSAGE_CACHE.put(components[1], components[1].split(" "));
-        }
-
         // Call the processors.
-        String[] data = MESSAGE_CACHE.get(components[1]);
+        String[] data = components[1].split(" ");
         for(IProcessor processor : processors) {
             processor.process(currentLogFileId, timestamp, thread, data);
         }
@@ -79,25 +71,6 @@ public class LogReader {
         try (
                 GZIPInputStream gzip = new GZIPInputStream(new FileInputStream(file));
                 BufferedReader br = new BufferedReader(new InputStreamReader(gzip))
-        ) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                processLine(line);
-            }
-        }
-    }
-
-    /**
-     * Process the target compressed file by reading it line by line.
-     *
-     * @param i The currently targeted compressed file number.
-     */
-    public void processPlainFile(int i) throws IOException {
-        File file = Paths.get("logs", targetFolder, "data." + i + ".log").toFile();
-        System.out.printf("[LogReader] Processing log file: '%s'%n", file.getPath());
-        try (
-                FileInputStream inputStream = new FileInputStream(file);
-                BufferedReader br = new BufferedReader(new InputStreamReader(inputStream))
         ) {
             String line;
             while ((line = br.readLine()) != null) {
@@ -179,10 +152,10 @@ public class LogReader {
 
     public static void main(String[] args) {
         LogReader operation = new LogReader(
-                "Elevator[T=60s]_2022-03-23T15.08.31.838491Z",
+                "Elevator[SLL,T=60s]_2022-03-24T13.38.23.733967500Z",
                 new IProcessor[]{
-                        new EntryDataProcessor(),
-                        new ThreadDataProcessor(),
+                        new LogFileEntryProcessor(),
+                        new LogFileMessageProcessor(5000, 10000, 50000)
                 }
         );
         operation.execute();
@@ -225,4 +198,15 @@ public class LogReader {
     //  since it is supported for gzip too. The latter has been verified through practice and code inspection.
     // TODO:
     //  - Verify if all threads have the same time gaps.
+    // TODO:
+    //  - Verify that the order of messages is correct.
+    //  - While testing, several inconsistencies were discovered that could imply that the original order of messages is
+    //  not guaranteed. For one, timestamps were not always in increasing order. Hence, an unique id has been assigned
+    //  to each of the log messages, which in turn shows order violations too.
+    //  - As a test, the logging has been changed from asynchronous to synchronized. However, the same issue persists,
+    //  which leads to the observation that it is not sufficient to make the unique id assignment thread safe, since a
+    //  race condition could still exist between the assignment of the id and writing to the log.
+    //  - The log order is not violated in an experiment where the logger call is converted to a synchronized method.
+    //  However, the synchronize keyword does not guarantee fairness, and hence, the balance between the threads is not
+    //  retained. Is there another way to test for incorrect behavior?
 }
