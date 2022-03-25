@@ -1,17 +1,19 @@
 package processing.processors.filedata;
 
-import processing.processors.IProcessor;
+import com.google.gson.*;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.lang.reflect.Type;
+import java.nio.file.Paths;
+import java.util.List;
 
 /**
  * A processor that gathers statistical data about messages within the log files.
  */
 public class LogFileMessageProcessor extends LogFileMessageSubProcessor {
-    // TODO: graph giving information on message sequences.
-
     // The timestamp of the first entry.
     private long first = Long.MAX_VALUE;
 
@@ -20,21 +22,16 @@ public class LogFileMessageProcessor extends LogFileMessageSubProcessor {
 
     // The (offset from start) interval to take measurements in.
     private final int start;
-    private final int duration;
+    private final int end;
 
     // Keep data for each interval slot.
     private final LogFileMessageSubProcessor[] intervals;
 
-
-    public LogFileMessageProcessor() {
-        this(Integer.MAX_VALUE, 0, Integer.MAX_VALUE);
-    }
-
     public LogFileMessageProcessor(int interval, int start, int end) {
         this.interval = interval;
         this.start = start;
-        this.duration = end - start;
-        this.intervals = new LogFileMessageSubProcessor[this.duration / interval];
+        this.end = end;
+        this.intervals = new LogFileMessageSubProcessor[(end - start) / interval];
         for(int i = 0; i < this.intervals.length; i++) {
             this.intervals[i] = new LogFileMessageSubProcessor();
         }
@@ -54,7 +51,7 @@ public class LogFileMessageProcessor extends LogFileMessageSubProcessor {
         first = Long.min(first, timestamp);
 
         // Check if the timestamp is within the desired measurement range.
-        if(timestamp >= first + start && timestamp < first + start + duration) {
+        if(timestamp >= first + start && timestamp < first + end) {
             // Process global data.
             super.process(fileNumber, timestamp, thread, data);
 
@@ -65,41 +62,36 @@ public class LogFileMessageProcessor extends LogFileMessageSubProcessor {
     }
 
     /**
-     * Report the data gathered by the processor.
+     * Register the appropriate serializer overrides to serialize the processor's data.
      *
-     * @param path The path to the folder in which the gathered results can be stored.
+     * @param builder The gson builder that will be used to generate the json models.
      */
     @Override
-    public void reportResults(String path) {
-        System.out.printf(
-                "[%s] The following data is within the time window [%s, %s) with interval %s.%n",
-                this.getClass().getSimpleName(),
-                start,
-                start + duration,
-                interval
-        );
+    public void registerJsonSerializers(GsonBuilder builder) {
+        super.registerJsonSerializers(builder);
 
-        // Report global data.
-        super.reportResults(path);
+        // Format the data differently.
+        JsonSerializer<LogFileMessageProcessor> serializer = (src, type, context) -> {
+            // Have the root level contain the chosen settings and a pointer to the global and interval data.
+            JsonObject root = new JsonObject();
+            root.addProperty("interval", interval);
+            root.addProperty("start", start);
+            root.addProperty("end", end);
+            root.add("global", context.serialize(entry));
 
-        // Report data per interval if appropriate.
-        if(intervals.length > 1) {
-            for(int i = 0; i < intervals.length; i++) {
-                System.out.printf(
-                        "[%s] Reporting log message counts for interval [%s, %s).%n",
-                        this.getClass().getSimpleName(),
-                        this.interval * i,
-                        this.interval * (i + 1)
-                );
-                MessageData entry = intervals[i].entry;
-                String[] targets = entry.count.keySet().toArray(new String[0]);
-                Arrays.sort(targets);
-                for(String target : targets) {
-                    System.out.printf(
-                            "[%s] - %s: %s%n", this.getClass().getSimpleName(), target, entry.count.get(target)
-                    );
-                }
+            // Have the interval data include the chosen intervals.
+            JsonObject[] intervalObjects = new JsonObject[intervals.length];
+            for(int i = 0; i < intervalObjects.length; i++) {
+                LogFileMessageSubProcessor processor = intervals[i];
+                intervalObjects[i] = new JsonObject();
+                intervalObjects[i].addProperty("start", i * interval);
+                intervalObjects[i].addProperty("end", (i + 1) * interval);
+                intervalObjects[i].add("count", context.serialize(processor.entry.count));
+                intervalObjects[i].add("graph", context.serialize(processor.entry.graph));
             }
-        }
+            root.add("intervals", context.serialize(intervalObjects));
+            return root;
+        };
+        builder.registerTypeAdapter(LogFileMessageProcessor.class, serializer);
     }
 }

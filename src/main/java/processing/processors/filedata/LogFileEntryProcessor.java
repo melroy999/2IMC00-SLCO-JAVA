@@ -1,6 +1,10 @@
 package processing.processors.filedata;
 
-import java.util.Arrays;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonSerializer;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,30 +37,22 @@ public class LogFileEntryProcessor extends LogFileEntrySubProcessor {
     }
 
     /**
-     * Report the data gathered by the processor.
+     * Register the appropriate serializer overrides to serialize the processor's data.
      *
-     * @param path The path to the folder in which the gathered results can be stored.
+     * @param builder The gson builder that will be used to generate the json models.
      */
     @Override
-    public void reportResults(String path) {
-        System.out.printf("[%s] Reporting log file characteristics.%n", this.getClass().getSimpleName());
+    public void registerJsonSerializers(GsonBuilder builder) {
+        super.registerJsonSerializers(builder);
 
-        // Report global data.
-        super.reportResults(path);
-
-        // Create a pre-defined order for the thread names.
-        String[] threads = this.threads.keySet().toArray(new String[0]);
-        Arrays.sort(threads);
-
-        // Print all entries grouped by file.
-        for(int i = 0; i < files.length; i++) {
-            System.out.printf("[%s] - File %s: %n", this.getClass().getSimpleName(), i);
-            for(String thread : threads) {
-                LogFileEntrySubProcessor processor = this.threads.get(thread);
-                LogFileEntrySubProcessor.LogFileData entry = processor.getFiles()[i];
-                System.out.printf("[%s]    - %s: %s%n", this.getClass().getSimpleName(), thread, entry);
-            }
-        }
+        // Format the data differently.
+        JsonSerializer<LogFileEntryProcessor> serializer = (src, type, context) -> {
+            // Have the root level differentiate global and thread data.
+            JsonObject root = new JsonObject();
+            root.add("global", context.serialize(src, LogFileEntrySubProcessor.class));
+            root.add("threads", context.serialize(src.threads));
+            return root;
+        };
+        builder.registerTypeAdapter(LogFileEntryProcessor.class, serializer);
     }
-
 }

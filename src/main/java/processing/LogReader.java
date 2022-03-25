@@ -1,10 +1,10 @@
 package processing;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import processing.processors.IProcessor;
 import processing.processors.filedata.LogFileEntryProcessor;
-import processing.processors.filedata.LogFileEntrySubProcessor;
 import processing.processors.filedata.LogFileMessageProcessor;
-import processing.processors.filedata.LogFileMessageSubProcessor;
 
 import java.io.*;
 import java.nio.file.Paths;
@@ -108,7 +108,6 @@ public class LogReader {
 
         // Process each of the log files in order--note that counting is started at 1 instead of 0.
         for(currentLogFileId = 0; currentLogFileId < nrOfLogFiles; currentLogFileId++) {
-//            processPlainFile(currentLogFileId + 1);
             processCompressedFile(currentLogFileId + 1);
         }
 
@@ -125,9 +124,16 @@ public class LogReader {
             System.out.println("[LogReader] Results folder already exists. Results will be overwritten.");
         }
 
+        // Prepare the gson builder.
+        GsonBuilder builder = new GsonBuilder();
+        for(IProcessor processor : processors) {
+            processor.registerJsonSerializers(builder);
+        }
+        Gson gson = builder.setPrettyPrinting().create();
+
         // Report the results.
         for(IProcessor processor : processors) {
-            processor.reportResults(file.getPath());
+            processor.reportResults(file.getPath(), gson);
         }
     }
 
@@ -152,7 +158,7 @@ public class LogReader {
 
     public static void main(String[] args) {
         LogReader operation = new LogReader(
-                "Elevator[SLL,T=60s]_2022-03-24T13.38.23.733967500Z",
+                "Elevator[T=60s]_2022-03-24T23.46.09.252429Z",
                 new IProcessor[]{
                         new LogFileEntryProcessor(),
                         new LogFileMessageProcessor(5000, 10000, 50000)

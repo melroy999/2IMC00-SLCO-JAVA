@@ -1,7 +1,16 @@
 package processing.processors.filedata;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonSerializer;
 import processing.processors.IProcessor;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -11,8 +20,8 @@ public class LogFileEntrySubProcessor implements IProcessor {
     // Keep entries for each individual log file.
     protected LogFileData[] files;
 
-    // The last recorded timestamp.
-    private long last = -1;
+    // Keep global data.
+    protected final LogFileData global = new LogFileData();
 
     /**
      * A data class containing static context-free information on the contents of the log file.
@@ -27,51 +36,6 @@ public class LogFileEntrySubProcessor implements IProcessor {
 
         // Track the number of entries per time unit (milliseconds).
         protected final Map<Long, Integer> count = new HashMap<>();
-
-        @Override
-        public String toString() {
-            return "FileData{" +
-                    "nrOfLines=" + lines +
-                    ", startTime=" + start +
-                    ", endTime=" + end +
-                    ", duration=" + (end - start) +
-                    ", rate=" + lines / (end - start) +
-                    ", activity=" + (float) count.size() / (end - start + 1) +
-                    getGaps() +
-                    '}';
-        }
-
-        /**
-         * Find gaps in the data.
-         *
-         * @return A comma separated list containing each of the gaps as an inclusive range, including the gap's length.
-         */
-        public String getGaps() {
-            if(count.size() == end - start + 1) {
-                // No gaps to report.
-                return "";
-            }
-
-            // Sort the gathered timestamps and find the gaps.
-            Long[] timestamps = count.keySet().toArray(new Long[0]);
-            Arrays.sort(timestamps);
-            long last = timestamps[0];
-
-            // Detect gaps in the data flow.
-            List<String> gaps = new ArrayList<>();
-            for(long timestamp : timestamps) {
-                if(last != -1 && timestamp - last > 1) {
-                    gaps.add(String.format(
-                            "[%s, %s]: %s",
-                            last + 1 - start,
-                            timestamp - 1 - start,
-                            timestamp - last - 2)
-                    );
-                }
-                last = timestamp;
-            }
-            return String.format(", missing_ranges=[%s]", String.join(", ", gaps));
-        }
     }
 
     protected LogFileEntrySubProcessor() {
@@ -115,23 +79,90 @@ public class LogFileEntrySubProcessor implements IProcessor {
         // Increment the count for the time unit and the total number of lines.
         entry.count.merge(timestamp, 1, Integer::sum);
         entry.lines++;
+
+        // Update global data.
+        global.start = Long.min(global.start, timestamp);
+        global.end = Long.max(global.end, timestamp);
+        global.count.merge(timestamp, 1, Integer::sum);
+        global.lines++;
     }
 
     /**
      * Report the data gathered by the processor.
      *
      * @param path The path to the folder in which the gathered results can be stored.
+     * @param gson The preconfigured gson formatter to be used.
      */
     @Override
-    public void reportResults(String path) {
-        System.out.printf("[%s] Reporting global log file characteristics.%n", this.getClass().getSimpleName());
-        for(int i = 0; i < files.length; i++) {
-            LogFileData entry = files[i];
-            System.out.printf("[%s] - File %s: %s%n", this.getClass().getSimpleName(), i, entry);
+    public void reportResults(String path, Gson gson) {
+        File file = Paths.get(path, "log_data.json").toFile();
+        try(BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+            writer.write(gson.toJson(this));
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
-    public LogFileData[] getFiles() {
-        return files;
+    /**
+     * Find gaps in the data.
+     *
+     * @return A list of json objects containing information on the gaps present in the log entry's data.
+     */
+    public List<JsonObject> getDataGaps(LogFileData entry) {
+        if(entry.count.size() == entry.end - entry.start + 1) {
+            // No gaps to report.
+            return new ArrayList<>();
+        }
+
+        // Sort the gathered timestamps and find the gaps.
+        Long[] timestamps = entry.count.keySet().toArray(new Long[0]);
+        Arrays.sort(timestamps);
+        long last = timestamps[0];
+
+        // Detect gaps in the data flow.
+        List<JsonObject> gaps = new ArrayList<>();
+        for(long timestamp : timestamps) {
+            if(last != -1 && timestamp - last > 1) {
+                JsonObject range = new JsonObject();
+                range.addProperty("start", last + 1 - entry.start);
+                range.addProperty("end", timestamp - 1 - entry.start);
+                range.addProperty("duration", timestamp - last - 2);
+                gaps.add(range);
+            }
+            last = timestamp;
+        }
+        return gaps;
+    }
+
+    /**
+     * Register the appropriate serializer overrides to serialize the processor's data.
+     *
+     * @param builder The gson builder that will be used to generate the json models.
+     */
+    public void registerJsonSerializers(GsonBuilder builder) {
+        JsonSerializer<LogFileEntrySubProcessor> processorSerializer = (src, type, context) -> {
+            // Bypass the processor and report the data instead.
+            JsonObject root = new JsonObject();
+            root.add("files", context.serialize(src.files));
+            root.add("global", context.serialize(src.global));
+            return root;
+        };
+        builder.registerTypeAdapter(LogFileEntrySubProcessor.class, processorSerializer);
+
+        JsonSerializer<LogFileData> dataSerializer = (src, type, context) -> {
+            // Add all information, including the gaps in the data.
+            JsonObject root = new JsonObject();
+            root.addProperty("lines", src.lines);
+            root.addProperty("start", src.start);
+            root.addProperty("end", src.end);
+            root.addProperty("duration", src.end - src.start);
+            root.addProperty("rate", (double) src.lines / (src.end - src.start));
+            root.addProperty("activity", (double) src.count.size() / (src.end - src.start + 1));
+            root.add("gaps", context.serialize(getDataGaps(src)));
+            root.add("count", context.serialize(src.count));
+
+            return root;
+        };
+        builder.registerTypeAdapter(LogFileData.class, dataSerializer);
     }
 }
