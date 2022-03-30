@@ -180,7 +180,7 @@ public class LogReader {
 
     public static void main(String[] args) {
         LogReader operation = new LogReader(
-                "Elevator[T=60s]_2022-03-26T23.45.19.982103100Z",
+                "Elevator[T=60s]_2022-03-30T19.59.59.088433900Z",
                 new IProcessor[]{
                         new LogFileEntryProcessor(),
                         new LogFileMessageProcessor(5000, 10000, 50000)
