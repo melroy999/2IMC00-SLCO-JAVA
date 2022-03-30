@@ -3,11 +3,6 @@ package processing.processors.filedata;
 import com.google.gson.*;
 import processing.processors.IProcessor;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -66,19 +61,23 @@ public class LogFileMessageSubProcessor implements IProcessor {
     }
 
     /**
-     * Report the data gathered by the processor.
-     *
-     * @param path The path to the folder in which the gathered results can be stored.
-     * @param gson The preconfigured gson formatter to be used.
+     * Post-process the data before conversion to json.
      */
     @Override
-    public void reportResults(String path, Gson gson) {
-        File file = Paths.get(path, "message_data.json").toFile();
-        try(BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
-            writer.write(gson.toJson(this));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public void postProcess() {
+
+    }
+
+
+    /**
+     * Add the data gathered by the processor to the given json object.
+     *
+     * @param path  The path to the folder in which the gathered results can be stored.
+     * @param gson  The preconfigured gson formatter to be used.
+     * @param object The json object to store the information in.
+     */
+    public void addResults(String path, Gson gson, JsonObject object) {
+        object.add("message_data", gson.toJsonTree(this));
     }
 
     /**

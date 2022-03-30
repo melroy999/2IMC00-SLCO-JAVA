@@ -2,6 +2,7 @@ package processing.processors;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
 
 /**
  * An interface for classes that process log entries.
@@ -25,11 +26,18 @@ public interface IProcessor {
     void process(int fileNumber, long timestamp, String thread, String[] data);
 
     /**
-     * Report the data gathered by the processor.
-     *  @param path The path to the folder in which the gathered results can be stored.
-     * @param gson The preconfigured gson formatter to be used.
+     * Post-process the data before conversion to json.
      */
-    void reportResults(String path, Gson gson);
+    void postProcess();
+
+    /**
+     * Add the data gathered by the processor to the given json object.
+     *
+     * @param path  The path to the folder in which the gathered results can be stored.
+     * @param gson  The preconfigured gson formatter to be used.
+     * @param object The json object to store the information in.
+     */
+    void addResults(String path, Gson gson, JsonObject object);
 
     /**
      * Register the appropriate serializer overrides to serialize the processor's data.

@@ -2,6 +2,7 @@ package processing;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
 import processing.processors.IProcessor;
 import processing.processors.filedata.LogFileEntryProcessor;
 import processing.processors.filedata.LogFileMessageProcessor;
@@ -25,6 +26,9 @@ public class LogReader {
     // The current log file number. Note that the count starts at zero instead of one.
     // Moreover, the non-compressed file should be empty and is hence not included in this count.
     private int currentLogFileId = 0;
+
+    // The model information encoded as a JSON string.
+    private String modelInformation;
 
     public LogReader(String targetFolder, IProcessor[] processors) {
         // Gather target data.
@@ -53,10 +57,15 @@ public class LogReader {
         long timestamp = Long.parseLong(components[0].substring(0, index));
         String thread = components[0].substring(index + 1);
 
-        // Call the processors.
-        String[] data = components[1].split(" ");
-        for(IProcessor processor : processors) {
-            processor.process(currentLogFileId, timestamp, thread, data);
+        // Check if the message contains special information.
+        if(components[1].startsWith("JSON")) {
+            modelInformation = components[1].substring(5);
+        } else {
+            // Call the processors.
+            String[] data = components[1].split(" ");
+            for (IProcessor processor : processors) {
+                processor.process(currentLogFileId, timestamp, thread, data);
+            }
         }
     }
 
@@ -124,16 +133,29 @@ public class LogReader {
             System.out.println("[LogReader] Results folder already exists. Results will be overwritten.");
         }
 
-        // Prepare the gson builder.
+        // Post-process the models and prepare the gson builder.
         GsonBuilder builder = new GsonBuilder();
         for(IProcessor processor : processors) {
+            processor.postProcess();
             processor.registerJsonSerializers(builder);
         }
-        Gson gson = builder.setPrettyPrinting().create();
+
 
         // Report the results.
+        Gson gson = builder.setPrettyPrinting().create();
+        JsonObject root = new JsonObject();
+        JsonObject model = gson.fromJson(modelInformation, JsonObject.class);
+        root.add("model", model);
         for(IProcessor processor : processors) {
-            processor.reportResults(file.getPath(), gson);
+            processor.addResults(file.getPath(), gson, root);
+        }
+
+        // Report the results to a file.
+        File dataFile = Paths.get(file.getPath(), "results.json").toFile();
+        try(BufferedWriter writer = new BufferedWriter(new FileWriter(dataFile))) {
+            writer.write(gson.toJson(root));
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -158,7 +180,7 @@ public class LogReader {
 
     public static void main(String[] args) {
         LogReader operation = new LogReader(
-                "Elevator[T=60s]_2022-03-24T23.46.09.252429Z",
+                "Elevator[T=60s]_2022-03-26T23.45.19.982103100Z",
                 new IProcessor[]{
                         new LogFileEntryProcessor(),
                         new LogFileMessageProcessor(5000, 10000, 50000)
@@ -215,4 +237,11 @@ public class LogReader {
     //  - The log order is not violated in an experiment where the logger call is converted to a synchronized method.
     //  However, the synchronize keyword does not guarantee fairness, and hence, the balance between the threads is not
     //  retained. Is there another way to test for incorrect behavior?
+
+    // TODO:
+    //  - It would be useful to have more information about the model added to the log. It would allow for messages to
+    //  be made shorter by shortening the names of objects. This could in theory increase the throughput and density of
+    //  the files. Moreover, the information itself could be used to create more detailed figures.
+    //  - Moreover, the above could ensure that each event written to the log is of equal length, which in turn helps to
+    //  ensure that each transition is affected equally by the logging.
 }

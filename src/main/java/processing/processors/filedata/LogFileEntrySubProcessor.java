@@ -88,19 +88,23 @@ public class LogFileEntrySubProcessor implements IProcessor {
     }
 
     /**
-     * Report the data gathered by the processor.
-     *
-     * @param path The path to the folder in which the gathered results can be stored.
-     * @param gson The preconfigured gson formatter to be used.
+     * Post-process the data before conversion to json.
      */
     @Override
-    public void reportResults(String path, Gson gson) {
-        File file = Paths.get(path, "log_data.json").toFile();
-        try(BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
-            writer.write(gson.toJson(this));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public void postProcess() {
+
+    }
+
+
+    /**
+     * Add the data gathered by the processor to the given json object.
+     *
+     * @param path  The path to the folder in which the gathered results can be stored.
+     * @param gson  The preconfigured gson formatter to be used.
+     * @param object The json object to store the information in.
+     */
+    public void addResults(String path, Gson gson, JsonObject object) {
+        object.add("log_data", gson.toJsonTree(this));
     }
 
     /**
@@ -126,7 +130,7 @@ public class LogFileEntrySubProcessor implements IProcessor {
                 JsonObject range = new JsonObject();
                 range.addProperty("start", last + 1 - entry.start);
                 range.addProperty("end", timestamp - 1 - entry.start);
-                range.addProperty("duration", timestamp - last - 2);
+                range.addProperty("duration", timestamp - last - 1);
                 gaps.add(range);
             }
             last = timestamp;
@@ -155,8 +159,8 @@ public class LogFileEntrySubProcessor implements IProcessor {
             root.addProperty("lines", src.lines);
             root.addProperty("start", src.start);
             root.addProperty("end", src.end);
-            root.addProperty("duration", src.end - src.start);
-            root.addProperty("rate", (double) src.lines / (src.end - src.start));
+            root.addProperty("duration", src.end - src.start + 1);
+            root.addProperty("rate", (double) src.lines / (src.end - src.start + 1));
             root.addProperty("activity", (double) src.count.size() / (src.end - src.start + 1));
             root.add("gaps", context.serialize(getDataGaps(src)));
             root.add("count", context.serialize(src.count));
