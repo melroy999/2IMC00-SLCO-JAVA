@@ -140,7 +140,6 @@ public class LogReader {
             processor.registerJsonSerializers(builder);
         }
 
-
         // Report the results.
         Gson gson = builder.setPrettyPrinting().create();
         JsonObject root = new JsonObject();
@@ -180,18 +179,9 @@ public class LogReader {
 
     public static void main(String[] args) {
         String[] targetFolders = {
-            "Elevator[CL=3,LBS=4194304,LFS=100MB,T=60s]/2022-03-31T12.55.23.509654700Z",
-            "Elevator[CL=3,LBS=4194304,LFS=100MB,T=60s]/2022-03-31T12.58.36.428404300Z",
-            "Elevator[CL=3,LBS=4194304,LFS=100MB,T=60s]/2022-03-31T12.59.46.848959200Z",
-            "Elevator[CL=3,LBS=4194304,LFS=100MB,T=60s]/2022-03-31T17.16.06.949563100Z",
-            "Elevator[CL=3,LBS=4194304,LFS=100MB,T=60s]/2022-03-31T17.17.15.714548100Z",
-            "Elevator[CL=3,LBS=4194304,LFS=100MB,T=60s]/2022-03-31T17.18.23.757465700Z",
-            "Elevator[CL=3,LBS=4194304,LFS=100MB,T=60s]/2022-03-31T17.19.36.509781Z",
-            "Elevator[CL=3,LBS=4194304,LFS=100MB,T=60s]/2022-03-31T17.20.44.752164800Z",
-            "Elevator[CL=3,LBS=4194304,LFS=100MB,T=60s]/2022-03-31T17.22.12.608062900Z",
-            "Elevator[CL=3,LBS=4194304,LFS=100MB,T=60s]/2022-03-31T17.23.51.082545700Z",
-            "Elevator[CL=3,LBS=4194304,LFS=100MB,T=60s]/2022-03-31T17.48.43.378361500Z",
-            "Elevator[CL=3,LBS=4194304,LFS=100MB,T=60s,URP]/2022-03-31T23.15.19.668411500Z",
+            "Elevator[CL=3,LBS=4194304,LFS=100MB,T=60s,URP]/logging/2022-04-03T17.58.29.572240Z",
+            "Elevator[CL=3,LBS=4194304,LFS=100MB,T=60s,URP]/logging/2022-04-03T17.59.39.116260200Z",
+            "Elevator[CL=3,LBS=4194304,LFS=100MB,T=60s,URP]/logging/2022-04-03T18.01.30.914282Z"
         };
 
         for(String targetFolder : targetFolders) {

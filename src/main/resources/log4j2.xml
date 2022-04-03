@@ -7,11 +7,12 @@
         <Property name="log_settings">log_settings</Property>
         <Property name="log_file_size">100 MB</Property>
         <Property name="compression_level">3</Property>
+        <Property name="log_type">logging</Property>
     </Properties>
     <Appenders>
         <RollingRandomAccessFile name="RollingRandomAccessFile"
-                                 fileName="logs/${main:log_name}${main:log_settings}/${main:log_date}/data.log"
-                                 filePattern="logs/${main:log_name}${main:log_settings}/${main:log_date}/data.%i.gz"
+                                 fileName="logs/${main:log_name}${main:log_settings}/${main:log_type}/${main:log_date}/data.log"
+                                 filePattern="logs/${main:log_name}${main:log_settings}/${main:log_type}/${main:log_date}/data.%i.gz"
                                  immediateFlush="false"
                                  append="false">
             <PatternLayout pattern="%d{UNIX_MILLIS}_%t %msg%n"/>
