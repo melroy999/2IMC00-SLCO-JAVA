@@ -14,17 +14,23 @@ public class LogFileMessageSubProcessor implements IProcessor {
     protected final MessageData entry = new MessageData();
 
     // The last entry encountered.
-    private transient String last;
+    private transient String last_event;
+
+    // The last transition entry encountered.
+    private transient String last_transition_event;
 
     /**
      * A data class holding statistical data for the target class.
      */
     static class MessageData {
         // Count the number of times that each event occurs within the log.
-        protected final Map<String, Long> count = new HashMap<>();
+        protected final Map<String, Long> event_count = new HashMap<>();
 
-        // Track how often a message is followed by another message to track concurrency.
-        protected final Map<String, Long> graph = new HashMap<>();
+        // Track the order of events to detect concurrency.
+        protected final Map<String, Long> succession_graph = new HashMap<>();
+
+        // Track the order of transition events to detect concurrency.
+        protected final Map<String, Long> transition_succession_graph = new HashMap<>();
     }
 
     /**
@@ -51,13 +57,21 @@ public class LogFileMessageSubProcessor implements IProcessor {
         String target = thread + "." + data[0];
 
         // Increment the appropriate counter.
-        entry.count.merge(target, 1L, Long::sum);
+        entry.event_count.merge(target, 1L, Long::sum);
 
-        // Add an edge to the graph if appropriate.
-        if(last != null) {
-            entry.graph.merge(last + "~" + target, 1L, Long::sum);
+        // Add an edge to the succession graph.
+        if(last_event != null) {
+            entry.succession_graph.merge(last_event + "~" + target, 1L, Long::sum);
         }
-        last = target;
+        last_event = target;
+
+        // Add an edge to the transition succession graph if appropriate.
+        if(target.contains(".T")) {
+            if(last_transition_event != null) {
+                entry.transition_succession_graph.merge(last_transition_event + "~" + target, 1L, Long::sum);
+            }
+            last_transition_event = target;
+        }
     }
 
     /**

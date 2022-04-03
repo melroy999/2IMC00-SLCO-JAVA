@@ -179,14 +179,31 @@ public class LogReader {
     }
 
     public static void main(String[] args) {
-        LogReader operation = new LogReader(
-                "Elevator[T=60s]_2022-03-30T19.59.59.088433900Z",
-                new IProcessor[]{
-                        new LogFileEntryProcessor(),
-                        new LogFileMessageProcessor(5000, 10000, 50000)
-                }
-        );
-        operation.execute();
+        String[] targetFolders = {
+            "Elevator[CL=3,LBS=4194304,LFS=100MB,T=60s]/2022-03-31T12.55.23.509654700Z",
+            "Elevator[CL=3,LBS=4194304,LFS=100MB,T=60s]/2022-03-31T12.58.36.428404300Z",
+            "Elevator[CL=3,LBS=4194304,LFS=100MB,T=60s]/2022-03-31T12.59.46.848959200Z",
+            "Elevator[CL=3,LBS=4194304,LFS=100MB,T=60s]/2022-03-31T17.16.06.949563100Z",
+            "Elevator[CL=3,LBS=4194304,LFS=100MB,T=60s]/2022-03-31T17.17.15.714548100Z",
+            "Elevator[CL=3,LBS=4194304,LFS=100MB,T=60s]/2022-03-31T17.18.23.757465700Z",
+            "Elevator[CL=3,LBS=4194304,LFS=100MB,T=60s]/2022-03-31T17.19.36.509781Z",
+            "Elevator[CL=3,LBS=4194304,LFS=100MB,T=60s]/2022-03-31T17.20.44.752164800Z",
+            "Elevator[CL=3,LBS=4194304,LFS=100MB,T=60s]/2022-03-31T17.22.12.608062900Z",
+            "Elevator[CL=3,LBS=4194304,LFS=100MB,T=60s]/2022-03-31T17.23.51.082545700Z",
+            "Elevator[CL=3,LBS=4194304,LFS=100MB,T=60s]/2022-03-31T17.48.43.378361500Z",
+            "Elevator[CL=3,LBS=4194304,LFS=100MB,T=60s,URP]/2022-03-31T23.15.19.668411500Z",
+        };
+
+        for(String targetFolder : targetFolders) {
+            LogReader operation = new LogReader(
+                    targetFolder,
+                    new IProcessor[]{
+                            new LogFileEntryProcessor(),
+                            new LogFileMessageProcessor(5000, 10000, 50000)
+                    }
+            );
+            operation.execute();
+        }
     }
 
     // TODO:

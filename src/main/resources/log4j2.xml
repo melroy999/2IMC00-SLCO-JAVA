@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration status="debug">
-<!--<Configuration>-->
+<!--<Configuration status="debug">-->
+<Configuration>
     <Properties>
         <Property name="log_date">log_date</Property>
         <Property name="log_name">log_name</Property>
         <Property name="log_settings">log_settings</Property>
         <Property name="log_file_size">100 MB</Property>
-        <Property name="log_buffer_size">4194304</Property>
         <Property name="compression_level">3</Property>
     </Properties>
     <Appenders>

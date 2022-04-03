@@ -2,14 +2,6 @@ package processing.processors.filedata;
 
 import com.google.gson.*;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.lang.reflect.Type;
-import java.nio.file.Paths;
-import java.util.List;
-
 /**
  * A processor that gathers statistical data about messages within the log files.
  */
@@ -77,7 +69,7 @@ public class LogFileMessageProcessor extends LogFileMessageSubProcessor {
             root.addProperty("interval", interval);
             root.addProperty("start", start);
             root.addProperty("end", end);
-            root.add("global", context.serialize(entry));
+            root.add("global_data", context.serialize(entry));
 
             // Have the interval data include the chosen intervals.
             JsonObject[] intervalObjects = new JsonObject[intervals.length];
@@ -86,8 +78,7 @@ public class LogFileMessageProcessor extends LogFileMessageSubProcessor {
                 intervalObjects[i] = new JsonObject();
                 intervalObjects[i].addProperty("start", i * interval);
                 intervalObjects[i].addProperty("end", (i + 1) * interval);
-                intervalObjects[i].add("count", context.serialize(processor.entry.count));
-                intervalObjects[i].add("graph", context.serialize(processor.entry.graph));
+                intervalObjects[i].add("data", context.serialize(processor.entry));
             }
             root.add("intervals", context.serialize(intervalObjects));
             return root;
