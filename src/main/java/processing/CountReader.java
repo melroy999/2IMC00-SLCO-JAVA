@@ -5,10 +5,12 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 
 import java.io.*;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class CountReader {
@@ -113,6 +115,16 @@ public class CountReader {
         }
     }
 
+    /**
+     * Process the given model result entry.
+     *
+     * @param path A path to a model result entry that contains count based measurements.
+     */
+    public static void processModel(String path) {
+        CountReader operation = new CountReader(path);
+        operation.execute();
+    }
+
     public static void main(String[] args) {
         String[] targetFolders = {
                 "Elevator[CL=3,LBS=4194304,LFS=100MB,T=60s,URP]/counting/2022-04-03T17.38.58.402268500Z",
@@ -121,8 +133,7 @@ public class CountReader {
         };
 
         for(String targetFolder : targetFolders) {
-            CountReader operation = new CountReader(targetFolder);
-            operation.execute();
+            processModel(targetFolder);
         }
     }
 }

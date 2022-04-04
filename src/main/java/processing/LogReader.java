@@ -8,8 +8,10 @@ import processing.processors.filedata.LogFileEntryProcessor;
 import processing.processors.filedata.LogFileMessageProcessor;
 
 import java.io.*;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.*;
+import java.util.List;
 import java.util.Objects;
 import java.util.zip.GZIPInputStream;
 
@@ -177,6 +179,23 @@ public class LogReader {
         }
     }
 
+
+    /**
+     * Process the given model result entry.
+     *
+     * @param path A path to a model result entry that contains count based measurements.
+     */
+    public static void processModel(String path) {
+        LogReader operation = new LogReader(
+                path,
+                new IProcessor[]{
+                        new LogFileEntryProcessor(),
+                        new LogFileMessageProcessor(5000, 10000, 50000)
+                }
+        );
+        operation.execute();
+    }
+
     public static void main(String[] args) {
         String[] targetFolders = {
             "Elevator[CL=3,LBS=4194304,LFS=100MB,T=60s,URP]/logging/2022-04-03T17.58.29.572240Z",
@@ -185,14 +204,7 @@ public class LogReader {
         };
 
         for(String targetFolder : targetFolders) {
-            LogReader operation = new LogReader(
-                    targetFolder,
-                    new IProcessor[]{
-                            new LogFileEntryProcessor(),
-                            new LogFileMessageProcessor(5000, 10000, 50000)
-                    }
-            );
-            operation.execute();
+            processModel(targetFolder);
         }
     }
 
