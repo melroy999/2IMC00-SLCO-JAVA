@@ -6,11 +6,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializer;
 import processing.processors.IProcessor;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -108,37 +103,6 @@ public class LogFileEntrySubProcessor implements IProcessor {
     }
 
     /**
-     * Find gaps in the data.
-     *
-     * @return A list of json objects containing information on the gaps present in the log entry's data.
-     */
-    public List<JsonObject> getDataGaps(LogFileData entry) {
-        if(entry.count.size() == entry.end - entry.start + 1) {
-            // No gaps to report.
-            return new ArrayList<>();
-        }
-
-        // Sort the gathered timestamps and find the gaps.
-        Long[] timestamps = entry.count.keySet().toArray(new Long[0]);
-        Arrays.sort(timestamps);
-        long last = timestamps[0];
-
-        // Detect gaps in the data flow.
-        List<JsonObject> gaps = new ArrayList<>();
-        for(long timestamp : timestamps) {
-            if(last != -1 && timestamp - last > 1) {
-                JsonObject range = new JsonObject();
-                range.addProperty("start", last + 1 - entry.start);
-                range.addProperty("end", timestamp - 1 - entry.start);
-                range.addProperty("duration", timestamp - last - 1);
-                gaps.add(range);
-            }
-            last = timestamp;
-        }
-        return gaps;
-    }
-
-    /**
      * Register the appropriate serializer overrides to serialize the processor's data.
      *
      * @param builder The gson builder that will be used to generate the json models.
@@ -162,9 +126,7 @@ public class LogFileEntrySubProcessor implements IProcessor {
             root.addProperty("duration", src.end - src.start + 1);
             root.addProperty("rate", (double) src.lines / (src.end - src.start + 1));
             root.addProperty("activity", (double) src.count.size() / (src.end - src.start + 1));
-            root.add("gaps", context.serialize(getDataGaps(src)));
             root.add("count", context.serialize(src.count));
-
             return root;
         };
         builder.registerTypeAdapter(LogFileData.class, dataSerializer);

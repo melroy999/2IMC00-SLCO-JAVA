@@ -25,7 +25,8 @@ public class ModelReader {
     public static void main(String[] args) {
         // List the target models.
         String[] targetModels = {
-                "Elevator[CL=3,LBS=4194304,LFS=100MB,T=60s]"
+//                "Elevator[CL=3,LBS=4194304,LFS=100MB,T=60s]"
+                "SyntheticTestTokens[DSSI=0,T=60s]"
         };
 
         // Process the given count and log-based results.
