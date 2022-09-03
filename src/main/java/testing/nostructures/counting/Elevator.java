@@ -1,4 +1,4 @@
-package testing.counting;
+package testing.nostructures.counting;
 
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
@@ -24,7 +24,7 @@ public class Elevator {
 
         String log_date = DateTimeFormatter.ISO_INSTANT.format(Instant.now()).replaceAll(":", ".");
         String log_name = "Elevator";
-        String log_settings = "[CL=3,LBS=4194304,LFS=100MB,T=60s]";
+        String log_settings = "[NDS,T=30s]";
         String log_file_size = "100MB";
         String compression_level = "3";
         String log_type = "counting";
@@ -326,16 +326,13 @@ public class Elevator {
                     D00_S++;
                     return;
                 }
-                T00_F++;
                 // [SEQ.END]
-                D00_F++;
             }
 
             // Attempt to fire a transition starting in state mov.
             private void exec_mov() {
                 D01_O++;
                 // [SEQ.START]
-                // [DET.START]
                 // SLCO transition (p:0, id:0) | mov -> open | t = p.
                 T01_O++;
                 if(execute_transition_mov_0()) {
@@ -343,7 +340,6 @@ public class Elevator {
                     D01_S++;
                     return;
                 }
-                T01_F++;
                 // SLCO transition (p:0, id:1) | mov -> mov | [t < p; p := p - 1].
                 T02_O++;
                 if(execute_transition_mov_1()) {
@@ -351,7 +347,6 @@ public class Elevator {
                     D01_S++;
                     return;
                 }
-                T02_F++;
                 // SLCO transition (p:0, id:2) | mov -> mov | [t > p; p := p + 1].
                 T03_O++;
                 if(execute_transition_mov_2()) {
@@ -359,10 +354,7 @@ public class Elevator {
                     D01_S++;
                     return;
                 }
-                T03_F++;
-                // [DET.END]
                 // [SEQ.END]
-                D01_F++;
             }
 
             // Attempt to fire a transition starting in state open.
@@ -376,15 +368,13 @@ public class Elevator {
                     D02_S++;
                     return;
                 }
-                T04_F++;
                 // [SEQ.END]
-                D02_F++;
             }
 
             // Main state machine loop.
             private void exec() {
                 Instant time_start = Instant.now();
-                while(Duration.between(time_start, Instant.now()).toSeconds() < 60) {
+                while(Duration.between(time_start, Instant.now()).toSeconds() < 30) {
                     switch(currentState) {
                         case idle -> exec_idle();
                         case mov -> exec_mov();
@@ -600,7 +590,6 @@ public class Elevator {
                     D03_S++;
                     return;
                 }
-                T05_F++;
                 // SLCO transition (p:0, id:1) | read -> read | [req[1] = 0; req[1] := 1].
                 T06_O++;
                 if(execute_transition_read_1()) {
@@ -608,7 +597,6 @@ public class Elevator {
                     D03_S++;
                     return;
                 }
-                T06_F++;
                 // SLCO transition (p:0, id:2) | read -> read | [req[2] = 0; req[2] := 1].
                 T07_O++;
                 if(execute_transition_read_2()) {
@@ -616,7 +604,6 @@ public class Elevator {
                     D03_S++;
                     return;
                 }
-                T07_F++;
                 // SLCO transition (p:0, id:3) | read -> read | [req[3] = 0; req[3] := 1].
                 T08_O++;
                 if(execute_transition_read_3()) {
@@ -624,15 +611,13 @@ public class Elevator {
                     D03_S++;
                     return;
                 }
-                T08_F++;
                 // [SEQ.END]
-                D03_F++;
             }
 
             // Main state machine loop.
             private void exec() {
                 Instant time_start = Instant.now();
-                while(Duration.between(time_start, Instant.now()).toSeconds() < 60) {
+                while(Duration.between(time_start, Instant.now()).toSeconds() < 30) {
                     switch(currentState) {
                         case read -> exec_read();
                     }
@@ -804,28 +789,28 @@ public class Elevator {
                 if(t >= 0 && t < 4) {
                     return true;
                 }
-                lock_ids[0] = target_locks[1] = 3 + 3; // Acquire req[3]
+                lock_ids[0] = target_locks[1] = 3 + 0; // Acquire req[0]
                 lock_ids[1] = target_locks[2] = 3 + 1; // Acquire req[1]
-                lock_ids[2] = target_locks[3] = 3 + 0; // Acquire req[0]
-                lock_ids[3] = target_locks[4] = 3 + 2; // Acquire req[2]
+                lock_ids[2] = target_locks[3] = 3 + 2; // Acquire req[2]
+                lock_ids[3] = target_locks[4] = 3 + 3; // Acquire req[3]
                 lockManager.acquire_locks(lock_ids, 4);
                 return false;
             }
 
             // SLCO expression wrapper | req[t] = 1.
             private boolean t_work_1_s_0_n_1() {
-                lock_ids[0] = target_locks[1] = 3 + 3; // Acquire req[3]
+                lock_ids[0] = target_locks[1] = 3 + 0; // Acquire req[0]
                 lock_ids[1] = target_locks[2] = 3 + 1; // Acquire req[1]
-                lock_ids[2] = target_locks[3] = 3 + 0; // Acquire req[0]
-                lock_ids[3] = target_locks[4] = 3 + 2; // Acquire req[2]
+                lock_ids[2] = target_locks[3] = 3 + 2; // Acquire req[2]
+                lock_ids[3] = target_locks[4] = 3 + 3; // Acquire req[3]
                 lock_ids[4] = target_locks[5] = 3 + t; // Acquire req[t]
                 lockManager.acquire_locks(lock_ids, 5);
                 if(req[t] == 1) {
                     lock_ids[0] = target_locks[0]; // Release t
-                    lock_ids[1] = target_locks[1]; // Release req[3]
+                    lock_ids[1] = target_locks[1]; // Release req[0]
                     lock_ids[2] = target_locks[2]; // Release req[1]
-                    lock_ids[3] = target_locks[3]; // Release req[0]
-                    lock_ids[4] = target_locks[4]; // Release req[2]
+                    lock_ids[3] = target_locks[3]; // Release req[2]
+                    lock_ids[4] = target_locks[4]; // Release req[3]
                     lock_ids[5] = target_locks[5]; // Release req[t]
                     lockManager.release_locks(lock_ids, 6);
                     return true;
@@ -852,10 +837,10 @@ public class Elevator {
                     return true;
                 }
                 lock_ids[0] = target_locks[0]; // Release t
-                lock_ids[1] = target_locks[1]; // Release req[3]
+                lock_ids[1] = target_locks[1]; // Release req[0]
                 lock_ids[2] = target_locks[2]; // Release req[1]
-                lock_ids[3] = target_locks[3]; // Release req[0]
-                lock_ids[4] = target_locks[4]; // Release req[2]
+                lock_ids[3] = target_locks[3]; // Release req[2]
+                lock_ids[4] = target_locks[4]; // Release req[3]
                 lockManager.release_locks(lock_ids, 5);
                 return false;
             }
@@ -866,10 +851,10 @@ public class Elevator {
                     return true;
                 }
                 lock_ids[0] = target_locks[0]; // Release t
-                lock_ids[1] = target_locks[1]; // Release req[3]
+                lock_ids[1] = target_locks[1]; // Release req[0]
                 lock_ids[2] = target_locks[2]; // Release req[1]
-                lock_ids[3] = target_locks[3]; // Release req[0]
-                lock_ids[4] = target_locks[4]; // Release req[2]
+                lock_ids[3] = target_locks[3]; // Release req[2]
+                lock_ids[4] = target_locks[4]; // Release req[3]
                 lockManager.release_locks(lock_ids, 5);
                 return false;
             }
@@ -877,18 +862,18 @@ public class Elevator {
             // SLCO expression wrapper | req[t] = 0.
             private boolean t_work_2_s_0_n_2() {
                 if(req[t] == 0) {
-                    lock_ids[0] = target_locks[1]; // Release req[3]
+                    lock_ids[0] = target_locks[1]; // Release req[0]
                     lock_ids[1] = target_locks[2]; // Release req[1]
-                    lock_ids[2] = target_locks[3]; // Release req[0]
-                    lock_ids[3] = target_locks[4]; // Release req[2]
+                    lock_ids[2] = target_locks[3]; // Release req[2]
+                    lock_ids[3] = target_locks[4]; // Release req[3]
                     lockManager.release_locks(lock_ids, 4);
                     return true;
                 }
                 lock_ids[0] = target_locks[0]; // Release t
-                lock_ids[1] = target_locks[1]; // Release req[3]
+                lock_ids[1] = target_locks[1]; // Release req[0]
                 lock_ids[2] = target_locks[2]; // Release req[1]
-                lock_ids[3] = target_locks[3]; // Release req[0]
-                lock_ids[4] = target_locks[4]; // Release req[2]
+                lock_ids[3] = target_locks[3]; // Release req[2]
+                lock_ids[4] = target_locks[4]; // Release req[3]
                 lockManager.release_locks(lock_ids, 5);
                 return false;
             }
@@ -935,16 +920,13 @@ public class Elevator {
                     D04_S++;
                     return;
                 }
-                T09_F++;
                 // [SEQ.END]
-                D04_F++;
             }
 
             // Attempt to fire a transition starting in state work.
             private void exec_work() {
                 D05_O++;
                 // [SEQ.START]
-                // [DET.START]
                 // SLCO transition (p:0, id:0) | work -> wait | [t < 0 or t = 4; ldir := 1 - ldir].
                 T10_O++;
                 if(execute_transition_work_0()) {
@@ -952,7 +934,6 @@ public class Elevator {
                     D05_S++;
                     return;
                 }
-                T10_F++;
                 // SLCO transition (p:0, id:1) | work -> done | t >= 0 and t < 4 and req[t] = 1.
                 T11_O++;
                 if(execute_transition_work_1()) {
@@ -960,7 +941,6 @@ public class Elevator {
                     D05_S++;
                     return;
                 }
-                T11_F++;
                 // SLCO transition (p:0, id:2) | work -> work | [t >= 0 and t < 4 and req[t] = 0; t := t + (2 * ldir) - 1].
                 T12_O++;
                 if(execute_transition_work_2()) {
@@ -968,10 +948,7 @@ public class Elevator {
                     D05_S++;
                     return;
                 }
-                T12_F++;
-                // [DET.END]
                 // [SEQ.END]
-                D05_F++;
             }
 
             // Attempt to fire a transition starting in state done.
@@ -985,15 +962,13 @@ public class Elevator {
                     D06_S++;
                     return;
                 }
-                T13_F++;
                 // [SEQ.END]
-                D06_F++;
             }
 
             // Main state machine loop.
             private void exec() {
                 Instant time_start = Instant.now();
-                while(Duration.between(time_start, Instant.now()).toSeconds() < 60) {
+                while(Duration.between(time_start, Instant.now()).toSeconds() < 30) {
                     switch(currentState) {
                         case wait -> exec_wait();
                         case work -> exec_work();
@@ -1083,6 +1058,6 @@ public class Elevator {
         model.joinThreads();
 
         // Include information about the model.
-        logger.info("JSON {\"name\": \"Elevator\", \"settings\": \"Elevator.slco -running_time=60 -performance_measurements -package_name=testing\", \"classes\": {\"GlobalClass\": {\"name\": \"GlobalClass\", \"state_machines\": {\"cabin\": {\"name\": \"cabin\", \"states\": [\"idle\", \"mov\", \"open\"], \"decision_structures\": {\"idle\": {\"source\": \"idle\", \"id\": \"D00\", \"transitions\": {\"0\": {\"name\": \"(p:0, id:0) | idle -> mov | v > 0\", \"id\": \"T00\", \"source\": \"idle\", \"target\": \"mov\", \"priority\": 0, \"is_excluded\": false}}}, \"mov\": {\"source\": \"mov\", \"id\": \"D01\", \"transitions\": {\"0\": {\"name\": \"(p:0, id:0) | mov -> open | t = p\", \"id\": \"T01\", \"source\": \"mov\", \"target\": \"open\", \"priority\": 0, \"is_excluded\": false}, \"1\": {\"name\": \"(p:0, id:1) | mov -> mov | [t < p; p := p - 1]\", \"id\": \"T02\", \"source\": \"mov\", \"target\": \"mov\", \"priority\": 0, \"is_excluded\": false}, \"2\": {\"name\": \"(p:0, id:2) | mov -> mov | [t > p; p := p + 1]\", \"id\": \"T03\", \"source\": \"mov\", \"target\": \"mov\", \"priority\": 0, \"is_excluded\": false}}}, \"open\": {\"source\": \"open\", \"id\": \"D02\", \"transitions\": {\"0\": {\"name\": \"(p:0, id:0) | open -> idle | true | [true; req[p] := 0; v := 0]\", \"id\": \"T04\", \"source\": \"open\", \"target\": \"idle\", \"priority\": 0, \"is_excluded\": false}}}}}, \"environment\": {\"name\": \"environment\", \"states\": [\"read\"], \"decision_structures\": {\"read\": {\"source\": \"read\", \"id\": \"D03\", \"transitions\": {\"0\": {\"name\": \"(p:0, id:0) | read -> read | [req[0] = 0; req[0] := 1]\", \"id\": \"T05\", \"source\": \"read\", \"target\": \"read\", \"priority\": 0, \"is_excluded\": false}, \"1\": {\"name\": \"(p:0, id:1) | read -> read | [req[1] = 0; req[1] := 1]\", \"id\": \"T06\", \"source\": \"read\", \"target\": \"read\", \"priority\": 0, \"is_excluded\": false}, \"2\": {\"name\": \"(p:0, id:2) | read -> read | [req[2] = 0; req[2] := 1]\", \"id\": \"T07\", \"source\": \"read\", \"target\": \"read\", \"priority\": 0, \"is_excluded\": false}, \"3\": {\"name\": \"(p:0, id:3) | read -> read | [req[3] = 0; req[3] := 1]\", \"id\": \"T08\", \"source\": \"read\", \"target\": \"read\", \"priority\": 0, \"is_excluded\": false}}}}}, \"controller\": {\"name\": \"controller\", \"states\": [\"wait\", \"work\", \"done\"], \"decision_structures\": {\"wait\": {\"source\": \"wait\", \"id\": \"D04\", \"transitions\": {\"0\": {\"name\": \"(p:0, id:0) | wait -> work | [v = 0; t := t + (2 * ldir) - 1]\", \"id\": \"T09\", \"source\": \"wait\", \"target\": \"work\", \"priority\": 0, \"is_excluded\": false}}}, \"work\": {\"source\": \"work\", \"id\": \"D05\", \"transitions\": {\"0\": {\"name\": \"(p:0, id:0) | work -> wait | [t < 0 or t = 4; ldir := 1 - ldir]\", \"id\": \"T10\", \"source\": \"work\", \"target\": \"wait\", \"priority\": 0, \"is_excluded\": false}, \"1\": {\"name\": \"(p:0, id:1) | work -> done | t >= 0 and t < 4 and req[t] = 1\", \"id\": \"T11\", \"source\": \"work\", \"target\": \"done\", \"priority\": 0, \"is_excluded\": false}, \"2\": {\"name\": \"(p:0, id:2) | work -> work | [t >= 0 and t < 4 and req[t] = 0; t := t + (2 * ldir) - 1]\", \"id\": \"T12\", \"source\": \"work\", \"target\": \"work\", \"priority\": 0, \"is_excluded\": false}}}, \"done\": {\"source\": \"done\", \"id\": \"D06\", \"transitions\": {\"0\": {\"name\": \"(p:0, id:0) | done -> wait | true | v := 1\", \"id\": \"T13\", \"source\": \"done\", \"target\": \"wait\", \"priority\": 0, \"is_excluded\": false}}}}}}}}}");
+        logger.info("JSON {\"name\": \"Elevator\", \"settings\": \"test_models/Elevator.slco -no_deterministic_structures -running_time=30 -package_name=testing.nostructures -performance_measurements\", \"classes\": {\"GlobalClass\": {\"name\": \"GlobalClass\", \"state_machines\": {\"cabin\": {\"name\": \"cabin\", \"states\": [\"idle\", \"mov\", \"open\"], \"decision_structures\": {\"idle\": {\"source\": \"idle\", \"id\": \"D00\", \"transitions\": {\"0\": {\"name\": \"(p:0, id:0) | idle -> mov | v > 0\", \"id\": \"T00\", \"source\": \"idle\", \"target\": \"mov\", \"priority\": 0, \"is_excluded\": false}}}, \"mov\": {\"source\": \"mov\", \"id\": \"D01\", \"transitions\": {\"0\": {\"name\": \"(p:0, id:0) | mov -> open | t = p\", \"id\": \"T01\", \"source\": \"mov\", \"target\": \"open\", \"priority\": 0, \"is_excluded\": false}, \"1\": {\"name\": \"(p:0, id:1) | mov -> mov | [t < p; p := p - 1]\", \"id\": \"T02\", \"source\": \"mov\", \"target\": \"mov\", \"priority\": 0, \"is_excluded\": false}, \"2\": {\"name\": \"(p:0, id:2) | mov -> mov | [t > p; p := p + 1]\", \"id\": \"T03\", \"source\": \"mov\", \"target\": \"mov\", \"priority\": 0, \"is_excluded\": false}}}, \"open\": {\"source\": \"open\", \"id\": \"D02\", \"transitions\": {\"0\": {\"name\": \"(p:0, id:0) | open -> idle | true | [true; req[p] := 0; v := 0]\", \"id\": \"T04\", \"source\": \"open\", \"target\": \"idle\", \"priority\": 0, \"is_excluded\": false}}}}}, \"environment\": {\"name\": \"environment\", \"states\": [\"read\"], \"decision_structures\": {\"read\": {\"source\": \"read\", \"id\": \"D03\", \"transitions\": {\"0\": {\"name\": \"(p:0, id:0) | read -> read | [req[0] = 0; req[0] := 1]\", \"id\": \"T05\", \"source\": \"read\", \"target\": \"read\", \"priority\": 0, \"is_excluded\": false}, \"1\": {\"name\": \"(p:0, id:1) | read -> read | [req[1] = 0; req[1] := 1]\", \"id\": \"T06\", \"source\": \"read\", \"target\": \"read\", \"priority\": 0, \"is_excluded\": false}, \"2\": {\"name\": \"(p:0, id:2) | read -> read | [req[2] = 0; req[2] := 1]\", \"id\": \"T07\", \"source\": \"read\", \"target\": \"read\", \"priority\": 0, \"is_excluded\": false}, \"3\": {\"name\": \"(p:0, id:3) | read -> read | [req[3] = 0; req[3] := 1]\", \"id\": \"T08\", \"source\": \"read\", \"target\": \"read\", \"priority\": 0, \"is_excluded\": false}}}}}, \"controller\": {\"name\": \"controller\", \"states\": [\"wait\", \"work\", \"done\"], \"decision_structures\": {\"wait\": {\"source\": \"wait\", \"id\": \"D04\", \"transitions\": {\"0\": {\"name\": \"(p:0, id:0) | wait -> work | [v = 0; t := t + (2 * ldir) - 1]\", \"id\": \"T09\", \"source\": \"wait\", \"target\": \"work\", \"priority\": 0, \"is_excluded\": false}}}, \"work\": {\"source\": \"work\", \"id\": \"D05\", \"transitions\": {\"0\": {\"name\": \"(p:0, id:0) | work -> wait | [t < 0 or t = 4; ldir := 1 - ldir]\", \"id\": \"T10\", \"source\": \"work\", \"target\": \"wait\", \"priority\": 0, \"is_excluded\": false}, \"1\": {\"name\": \"(p:0, id:1) | work -> done | t >= 0 and t < 4 and req[t] = 1\", \"id\": \"T11\", \"source\": \"work\", \"target\": \"done\", \"priority\": 0, \"is_excluded\": false}, \"2\": {\"name\": \"(p:0, id:2) | work -> work | [t >= 0 and t < 4 and req[t] = 0; t := t + (2 * ldir) - 1]\", \"id\": \"T12\", \"source\": \"work\", \"target\": \"work\", \"priority\": 0, \"is_excluded\": false}}}, \"done\": {\"source\": \"done\", \"id\": \"D06\", \"transitions\": {\"0\": {\"name\": \"(p:0, id:0) | done -> wait | true | v := 1\", \"id\": \"T13\", \"source\": \"done\", \"target\": \"wait\", \"priority\": 0, \"is_excluded\": false}}}}}}}}}");
     }
 }
