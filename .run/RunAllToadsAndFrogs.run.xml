@@ -21,6 +21,7 @@
       <option name="RunConfigurationTask" enabled="true" run_configuration_name="ToadsAndFrogs (counting, statement)" run_configuration_type="Application" />
       <option name="RunConfigurationTask" enabled="true" run_configuration_name="ToadsAndFrogs (counting, variable)" run_configuration_type="Application" />
       <option name="RunConfigurationTask" enabled="true" run_configuration_name="ToadsAndFrogs (logging, basic)" run_configuration_type="Application" />
+      <option name="RunConfigurationTask" enabled="true" run_configuration_name="ToadsAndFrogs (logging, randompick)" run_configuration_type="Application" />
     </method>
   </configuration>
 </component>
