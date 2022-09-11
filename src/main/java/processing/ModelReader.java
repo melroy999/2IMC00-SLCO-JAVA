@@ -31,10 +31,10 @@ public class ModelReader {
 
         // List the target models.
         targetModels = new String[] {
-                "Telephony[LA,T=30s,URP]",
-                "Telephony[NL,T=30s,URP]",
-                "Telephony[SLL,T=30s,URP]",
-                "Telephony[T=30s,URP]"
+                "Telephony[LA,NDS,T=30s,URP]",
+                "Telephony[NDS,NL,T=30s,URP]",
+                "Telephony[NDS,SLL,T=30s,URP]",
+                "Telephony[NDS,T=30s,URP]"
         };
 
         // Process the given count and log-based results.

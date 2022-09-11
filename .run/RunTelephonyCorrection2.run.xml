@@ -1,0 +1,22 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="RunTelephonyCorrection2" type="Application" factoryName="Application" singleton="false" nameIsGenerated="true">
+    <option name="MAIN_CLASS_NAME" value="testing.RunTelephonyCorrection2" />
+    <module name="2IMC00-SLCO-JAVA" />
+    <selectedOptions>
+      <option name="vmParameters" />
+    </selectedOptions>
+    <extension name="coverage">
+      <pattern>
+        <option name="PATTERN" value="testing.*" />
+        <option name="ENABLED" value="true" />
+      </pattern>
+    </extension>
+    <method v="2">
+      <option name="Make" enabled="true" />
+      <option name="RunConfigurationTask" enabled="true" run_configuration_name="Telephony (counting, randompicknostructuresnolocks)" run_configuration_type="Application" />
+      <option name="RunConfigurationTask" enabled="true" run_configuration_name="Telephony (counting, randompicknostructuresstatement)" run_configuration_type="Application" />
+      <option name="RunConfigurationTask" enabled="true" run_configuration_name="Telephony (counting, randompicknostructuresvariable)" run_configuration_type="Application" />
+      <option name="RunConfigurationTask" enabled="true" run_configuration_name="Telephony (logging, randompicknostructures)" run_configuration_type="Application" />
+    </method>
+  </configuration>
+</component>

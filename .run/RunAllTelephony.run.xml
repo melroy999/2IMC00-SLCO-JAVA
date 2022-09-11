@@ -23,8 +23,12 @@
       <option name="RunConfigurationTask" enabled="true" run_configuration_name="Telephony (counting, randompicknolocks)" run_configuration_type="Application" />
       <option name="RunConfigurationTask" enabled="true" run_configuration_name="Telephony (counting, randompickstatement)" run_configuration_type="Application" />
       <option name="RunConfigurationTask" enabled="true" run_configuration_name="Telephony (counting, randompickvariable)" run_configuration_type="Application" />
+      <option name="RunConfigurationTask" enabled="true" run_configuration_name="Telephony (counting, randompicknostructuresnolocks)" run_configuration_type="Application" />
+      <option name="RunConfigurationTask" enabled="true" run_configuration_name="Telephony (counting, randompicknostructuresstatement)" run_configuration_type="Application" />
+      <option name="RunConfigurationTask" enabled="true" run_configuration_name="Telephony (counting, randompicknostructuresvariable)" run_configuration_type="Application" />
       <option name="RunConfigurationTask" enabled="true" run_configuration_name="Telephony (logging, basic)" run_configuration_type="Application" />
       <option name="RunConfigurationTask" enabled="true" run_configuration_name="Telephony (logging, randompick)" run_configuration_type="Application" />
+      <option name="RunConfigurationTask" enabled="true" run_configuration_name="Telephony (logging, randompicknostructures)" run_configuration_type="Application" />
     </method>
   </configuration>
 </component>
