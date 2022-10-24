@@ -30,12 +30,12 @@ public class ModelReader {
         String[] targetModels = Arrays.stream(directories).map(File::getName).toArray(String[]::new);
 
         // List the target models.
-        targetModels = new String[] {
-                "Telephony[LA,NDS,T=30s,URP]",
-                "Telephony[NDS,NL,T=30s,URP]",
-                "Telephony[NDS,SLL,T=30s,URP]",
-                "Telephony[NDS,T=30s,URP]"
-        };
+//        targetModels = new String[] {
+//                "Telephony[LA,NDS,T=30s,URP]",
+//                "Telephony[NDS,NL,T=30s,URP]",
+//                "Telephony[NDS,SLL,T=30s,URP]",
+//                "Telephony[NDS,T=30s,URP]"
+//        };
 
         // Process the given count and log-based results.
         for(String name : targetModels) {

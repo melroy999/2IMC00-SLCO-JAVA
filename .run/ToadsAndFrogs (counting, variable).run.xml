@@ -7,7 +7,7 @@
     </selectedOptions>
     <extension name="coverage">
       <pattern>
-        <option name="PATTERN" value="testing.variable.counting.*" />
+        <option name="PATTERN" value="testing.*" />
         <option name="ENABLED" value="true" />
       </pattern>
     </extension>

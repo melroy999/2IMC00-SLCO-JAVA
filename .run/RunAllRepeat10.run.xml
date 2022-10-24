@@ -23,6 +23,7 @@
       <option name="RunConfigurationTask" enabled="true" run_configuration_name="RunAll" run_configuration_type="Application" />
       <option name="RunConfigurationTask" enabled="true" run_configuration_name="RunAll" run_configuration_type="Application" />
       <option name="RunConfigurationTask" enabled="true" run_configuration_name="RunAll" run_configuration_type="Application" />
+      <option name="RunConfigurationTask" enabled="true" run_configuration_name="ModelReader" run_configuration_type="Application" />
     </method>
   </configuration>
 </component>

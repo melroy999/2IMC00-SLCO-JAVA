@@ -1,0 +1,260 @@
+{
+  "model": {
+    "name": "Elevator",
+    "settings": "test_models/Elevator.slco -use_random_pick -running_time\u003d30 -package_name\u003dtesting.randompick -performance_measurements",
+    "classes": {
+      "GlobalClass": {
+        "name": "GlobalClass",
+        "state_machines": {
+          "cabin": {
+            "name": "cabin",
+            "states": [
+              "idle",
+              "mov",
+              "open"
+            ],
+            "decision_structures": {
+              "idle": {
+                "source": "idle",
+                "id": "D00",
+                "transitions": {
+                  "0": {
+                    "name": "(p:0, id:0) | idle -\u003e mov | v \u003e 0",
+                    "id": "T00",
+                    "source": "idle",
+                    "target": "mov",
+                    "priority": 0,
+                    "is_excluded": false
+                  }
+                }
+              },
+              "mov": {
+                "source": "mov",
+                "id": "D01",
+                "transitions": {
+                  "0": {
+                    "name": "(p:0, id:0) | mov -\u003e open | t \u003d p",
+                    "id": "T01",
+                    "source": "mov",
+                    "target": "open",
+                    "priority": 0,
+                    "is_excluded": false
+                  },
+                  "1": {
+                    "name": "(p:0, id:1) | mov -\u003e mov | [t \u003c p; p :\u003d p - 1]",
+                    "id": "T02",
+                    "source": "mov",
+                    "target": "mov",
+                    "priority": 0,
+                    "is_excluded": false
+                  },
+                  "2": {
+                    "name": "(p:0, id:2) | mov -\u003e mov | [t \u003e p; p :\u003d p + 1]",
+                    "id": "T03",
+                    "source": "mov",
+                    "target": "mov",
+                    "priority": 0,
+                    "is_excluded": false
+                  }
+                }
+              },
+              "open": {
+                "source": "open",
+                "id": "D02",
+                "transitions": {
+                  "0": {
+                    "name": "(p:0, id:0) | open -\u003e idle | true | [true; req[p] :\u003d 0; v :\u003d 0]",
+                    "id": "T04",
+                    "source": "open",
+                    "target": "idle",
+                    "priority": 0,
+                    "is_excluded": false
+                  }
+                }
+              }
+            }
+          },
+          "environment": {
+            "name": "environment",
+            "states": [
+              "read"
+            ],
+            "decision_structures": {
+              "read": {
+                "source": "read",
+                "id": "D03",
+                "transitions": {
+                  "0": {
+                    "name": "(p:0, id:0) | read -\u003e read | [req[0] \u003d 0; req[0] :\u003d 1]",
+                    "id": "T05",
+                    "source": "read",
+                    "target": "read",
+                    "priority": 0,
+                    "is_excluded": false
+                  },
+                  "1": {
+                    "name": "(p:0, id:1) | read -\u003e read | [req[1] \u003d 0; req[1] :\u003d 1]",
+                    "id": "T06",
+                    "source": "read",
+                    "target": "read",
+                    "priority": 0,
+                    "is_excluded": false
+                  },
+                  "2": {
+                    "name": "(p:0, id:2) | read -\u003e read | [req[2] \u003d 0; req[2] :\u003d 1]",
+                    "id": "T07",
+                    "source": "read",
+                    "target": "read",
+                    "priority": 0,
+                    "is_excluded": false
+                  },
+                  "3": {
+                    "name": "(p:0, id:3) | read -\u003e read | [req[3] \u003d 0; req[3] :\u003d 1]",
+                    "id": "T08",
+                    "source": "read",
+                    "target": "read",
+                    "priority": 0,
+                    "is_excluded": false
+                  }
+                }
+              }
+            }
+          },
+          "controller": {
+            "name": "controller",
+            "states": [
+              "wait",
+              "work",
+              "done"
+            ],
+            "decision_structures": {
+              "wait": {
+                "source": "wait",
+                "id": "D04",
+                "transitions": {
+                  "0": {
+                    "name": "(p:0, id:0) | wait -\u003e work | [v \u003d 0; t :\u003d t + (2 * ldir) - 1]",
+                    "id": "T09",
+                    "source": "wait",
+                    "target": "work",
+                    "priority": 0,
+                    "is_excluded": false
+                  }
+                }
+              },
+              "work": {
+                "source": "work",
+                "id": "D05",
+                "transitions": {
+                  "0": {
+                    "name": "(p:0, id:0) | work -\u003e wait | [t \u003c 0 or t \u003d 4; ldir :\u003d 1 - ldir]",
+                    "id": "T10",
+                    "source": "work",
+                    "target": "wait",
+                    "priority": 0,
+                    "is_excluded": false
+                  },
+                  "1": {
+                    "name": "(p:0, id:1) | work -\u003e done | t \u003e\u003d 0 and t \u003c 4 and req[t] \u003d 1",
+                    "id": "T11",
+                    "source": "work",
+                    "target": "done",
+                    "priority": 0,
+                    "is_excluded": false
+                  },
+                  "2": {
+                    "name": "(p:0, id:2) | work -\u003e work | [t \u003e\u003d 0 and t \u003c 4 and req[t] \u003d 0; t :\u003d t + (2 * ldir) - 1]",
+                    "id": "T12",
+                    "source": "work",
+                    "target": "work",
+                    "priority": 0,
+                    "is_excluded": false
+                  }
+                }
+              },
+              "done": {
+                "source": "done",
+                "id": "D06",
+                "transitions": {
+                  "0": {
+                    "name": "(p:0, id:0) | done -\u003e wait | true | v :\u003d 1",
+                    "id": "T13",
+                    "source": "done",
+                    "target": "wait",
+                    "priority": 0,
+                    "is_excluded": false
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "event_count": {
+    "Thread-0.T02.S": 716554,
+    "Thread-0.T00.S": 1908912,
+    "Thread-0.T04.O": 1908912,
+    "Thread-2.T09.S": 2386626,
+    "Thread-2.T10.F": 0,
+    "Thread-0.D01.F": 0,
+    "Thread-2.D06.F": 0,
+    "Thread-2.T12.F": 0,
+    "Thread-2.D04.F": 0,
+    "Thread-0.T04.S": 1908912,
+    "Thread-2.D04.S": 2386626,
+    "Thread-2.D06.O": 1908912,
+    "Thread-2.D04.O": 6053543,
+    "Thread-0.T02.O": 1433108,
+    "Thread-0.T00.O": 16386781,
+    "Thread-0.T00.F": 0,
+    "Thread-1.T05.F": 0,
+    "Thread-2.T10.S": 477713,
+    "Thread-1.T07.F": 0,
+    "Thread-2.T12.S": 1936,
+    "Thread-0.T04.F": 0,
+    "Thread-0.T02.F": 0,
+    "Thread-2.D06.S": 1908912,
+    "Thread-1.T05.O": 153388079,
+    "Thread-2.T10.O": 2388561,
+    "Thread-1.T07.O": 153377947,
+    "Thread-1.T05.S": 476910,
+    "Thread-2.T12.O": 1936,
+    "Thread-1.T07.S": 477692,
+    "Thread-1.D03.O": 613526596,
+    "Thread-1.D03.S": 1908916,
+    "Thread-0.D00.S": 1908912,
+    "Thread-2.T09.F": 0,
+    "Thread-0.D02.S": 1908912,
+    "Thread-2.T09.O": 6053543,
+    "Thread-0.D00.O": 16386781,
+    "Thread-0.D02.O": 1908912,
+    "Thread-0.T03.S": 716554,
+    "Thread-0.D00.F": 0,
+    "Thread-0.T01.S": 1908912,
+    "Thread-2.D05.F": 0,
+    "Thread-0.D02.F": 0,
+    "Thread-2.T11.F": 0,
+    "Thread-2.T13.F": 0,
+    "Thread-2.D05.S": 2388561,
+    "Thread-0.T03.O": 716554,
+    "Thread-2.D05.O": 2388561,
+    "Thread-0.T01.O": 3342020,
+    "Thread-2.T13.O": 1908912,
+    "Thread-2.T11.S": 1908912,
+    "Thread-1.T06.F": 0,
+    "Thread-2.T13.S": 1908912,
+    "Thread-1.T08.F": 0,
+    "Thread-0.T03.F": 0,
+    "Thread-0.T01.F": 0,
+    "Thread-1.T06.O": 153377058,
+    "Thread-1.T08.O": 153383512,
+    "Thread-1.T06.S": 477689,
+    "Thread-2.T11.O": 1910848,
+    "Thread-1.D03.F": 0,
+    "Thread-1.T08.S": 476625,
+    "Thread-0.D01.S": 3342020,
+    "Thread-0.D01.O": 3342020
+  }
+}

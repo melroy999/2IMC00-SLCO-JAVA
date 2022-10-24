@@ -61,7 +61,7 @@ public class CounterDistributor {
         LockManager(int noVariables) {
             locks = new ReentrantLock[noVariables];
             for(int i = 0; i < locks.length; i++) {
-                locks[i] = new ReentrantLock();
+                locks[i] = new ReentrantLock(true);
             }
         }
 

@@ -1,0 +1,170 @@
+{
+  "model": {
+    "name": "CounterDistributor",
+    "settings": "test_models/CounterDistributor.slco -use_random_pick -no_deterministic_structures -running_time\u003d30 -package_name\u003dtesting.randompicknostructures -performance_measurements",
+    "classes": {
+      "CounterDistributorExact": {
+        "name": "CounterDistributorExact",
+        "state_machines": {
+          "Counter": {
+            "name": "Counter",
+            "states": [
+              "C"
+            ],
+            "decision_structures": {
+              "C": {
+                "source": "C",
+                "id": "D00",
+                "transitions": {
+                  "0": {
+                    "name": "(p:0, id:0) | C -\u003e C | true | x :\u003d (x + 1) % 10",
+                    "id": "T00",
+                    "source": "C",
+                    "target": "C",
+                    "priority": 0,
+                    "is_excluded": false
+                  }
+                }
+              }
+            }
+          },
+          "Distributor": {
+            "name": "Distributor",
+            "states": [
+              "P"
+            ],
+            "decision_structures": {
+              "P": {
+                "source": "P",
+                "id": "D01",
+                "transitions": {
+                  "0": {
+                    "name": "(p:0, id:0) | P -\u003e P | x \u003d 0",
+                    "id": "T01",
+                    "source": "P",
+                    "target": "P",
+                    "priority": 0,
+                    "is_excluded": false
+                  },
+                  "1": {
+                    "name": "(p:0, id:1) | P -\u003e P | x \u003d 1",
+                    "id": "T02",
+                    "source": "P",
+                    "target": "P",
+                    "priority": 0,
+                    "is_excluded": false
+                  },
+                  "2": {
+                    "name": "(p:0, id:2) | P -\u003e P | x \u003d 2",
+                    "id": "T03",
+                    "source": "P",
+                    "target": "P",
+                    "priority": 0,
+                    "is_excluded": false
+                  },
+                  "3": {
+                    "name": "(p:0, id:3) | P -\u003e P | x \u003d 3",
+                    "id": "T04",
+                    "source": "P",
+                    "target": "P",
+                    "priority": 0,
+                    "is_excluded": false
+                  },
+                  "4": {
+                    "name": "(p:0, id:4) | P -\u003e P | x \u003d 4",
+                    "id": "T05",
+                    "source": "P",
+                    "target": "P",
+                    "priority": 0,
+                    "is_excluded": false
+                  },
+                  "5": {
+                    "name": "(p:0, id:5) | P -\u003e P | x \u003d 5",
+                    "id": "T06",
+                    "source": "P",
+                    "target": "P",
+                    "priority": 0,
+                    "is_excluded": false
+                  },
+                  "6": {
+                    "name": "(p:0, id:6) | P -\u003e P | x \u003d 6",
+                    "id": "T07",
+                    "source": "P",
+                    "target": "P",
+                    "priority": 0,
+                    "is_excluded": false
+                  },
+                  "7": {
+                    "name": "(p:0, id:7) | P -\u003e P | x \u003d 7",
+                    "id": "T08",
+                    "source": "P",
+                    "target": "P",
+                    "priority": 0,
+                    "is_excluded": false
+                  },
+                  "8": {
+                    "name": "(p:0, id:8) | P -\u003e P | x \u003d 8",
+                    "id": "T09",
+                    "source": "P",
+                    "target": "P",
+                    "priority": 0,
+                    "is_excluded": false
+                  },
+                  "9": {
+                    "name": "(p:0, id:9) | P -\u003e P | x \u003d 9",
+                    "id": "T10",
+                    "source": "P",
+                    "target": "P",
+                    "priority": 0,
+                    "is_excluded": false
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "event_count": {
+    "Thread-0.D00.F": 0,
+    "Thread-0.T00.S": 7087409,
+    "Thread-1.T01.F": 0,
+    "Thread-1.T03.F": 0,
+    "Thread-0.T00.O": 7087409,
+    "Thread-1.T02.F": 0,
+    "Thread-0.T00.F": 0,
+    "Thread-1.T05.F": 0,
+    "Thread-1.T04.F": 0,
+    "Thread-1.T07.F": 0,
+    "Thread-1.T06.F": 0,
+    "Thread-1.T09.F": 0,
+    "Thread-1.T08.F": 0,
+    "Thread-1.T02.O": 622588,
+    "Thread-1.T01.O": 622710,
+    "Thread-1.T04.O": 625431,
+    "Thread-1.T03.O": 623892,
+    "Thread-1.T02.S": 62073,
+    "Thread-1.T06.O": 623659,
+    "Thread-1.T01.S": 62243,
+    "Thread-1.T05.O": 624088,
+    "Thread-1.T04.S": 62630,
+    "Thread-1.T08.O": 624346,
+    "Thread-1.D01.F": 0,
+    "Thread-1.T03.S": 62157,
+    "Thread-1.T07.O": 623697,
+    "Thread-1.T06.S": 62363,
+    "Thread-1.T05.S": 62275,
+    "Thread-1.T09.O": 622654,
+    "Thread-1.T08.S": 61974,
+    "Thread-1.T07.S": 62471,
+    "Thread-1.T09.S": 62125,
+    "Thread-1.D01.O": 6233936,
+    "Thread-1.T10.F": 0,
+    "Thread-1.D01.S": 622668,
+    "Thread-0.D00.S": 7087409,
+    "Thread-1.T10.O": 620871,
+    "Thread-1.T10.S": 62357,
+    "Thread-0.D00.O": 7087409
+  }
+}

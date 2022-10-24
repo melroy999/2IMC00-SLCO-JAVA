@@ -1,0 +1,304 @@
+{
+  "model": {
+    "name": "ToadsAndFrogs",
+    "settings": "test_models/Toads.slco -no_deterministic_structures -running_time\u003d30 -package_name\u003dtesting.nostructures -performance_measurements",
+    "classes": {
+      "GlobalClass": {
+        "name": "GlobalClass",
+        "state_machines": {
+          "toad": {
+            "name": "toad",
+            "states": [
+              "q"
+            ],
+            "decision_structures": {
+              "q": {
+                "source": "q",
+                "id": "D00",
+                "transitions": {
+                  "0": {
+                    "name": "(p:0, id:0) | q -\u003e q | [y \u003e 0 and tmin !\u003d y - 1 and a[y - 1] \u003d 1; a[y] :\u003d 1; y :\u003d y - 1; a[y] :\u003d 0]",
+                    "id": "T00",
+                    "source": "q",
+                    "target": "q",
+                    "priority": 0,
+                    "is_excluded": false
+                  },
+                  "1": {
+                    "name": "(p:0, id:1) | q -\u003e q | [y \u003e 0 and tmin \u003d y - 1 and a[y - 1] \u003d 1; a[y] :\u003d 1; tmin :\u003d y; y :\u003d y - 1; a[y] :\u003d 0]",
+                    "id": "T01",
+                    "source": "q",
+                    "target": "q",
+                    "priority": 0,
+                    "is_excluded": false
+                  },
+                  "2": {
+                    "name": "(p:0, id:2) | q -\u003e q | [y \u003e 1 and tmin !\u003d y - 2 and a[y - 2] \u003d 1 and a[y - 1] \u003d 2; a[y] :\u003d 1; y :\u003d y - 2; a[y] :\u003d 0]",
+                    "id": "T02",
+                    "source": "q",
+                    "target": "q",
+                    "priority": 0,
+                    "is_excluded": false
+                  },
+                  "3": {
+                    "name": "(p:0, id:3) | q -\u003e q | [y \u003e 1 and tmin \u003d y - 2 and a[y - 2] \u003d 1 and a[y - 1] \u003d 2; a[y] :\u003d 1; tmin :\u003d y; y :\u003d y - 2; a[y] :\u003d 0]",
+                    "id": "T03",
+                    "source": "q",
+                    "target": "q",
+                    "priority": 0,
+                    "is_excluded": false
+                  }
+                }
+              }
+            }
+          },
+          "frog": {
+            "name": "frog",
+            "states": [
+              "q"
+            ],
+            "decision_structures": {
+              "q": {
+                "source": "q",
+                "id": "D01",
+                "transitions": {
+                  "0": {
+                    "name": "(p:0, id:0) | q -\u003e q | [y \u003c 8 and fmax !\u003d y + 1 and a[y + 1] \u003d 2; a[y] :\u003d 2; y :\u003d y + 1; a[y] :\u003d 0]",
+                    "id": "T04",
+                    "source": "q",
+                    "target": "q",
+                    "priority": 0,
+                    "is_excluded": false
+                  },
+                  "1": {
+                    "name": "(p:0, id:1) | q -\u003e q | [y \u003c 8 and fmax \u003d y + 1 and a[y + 1] \u003d 2; a[y] :\u003d 2; fmax :\u003d y; y :\u003d y + 1; a[y] :\u003d 0]",
+                    "id": "T05",
+                    "source": "q",
+                    "target": "q",
+                    "priority": 0,
+                    "is_excluded": false
+                  },
+                  "2": {
+                    "name": "(p:0, id:2) | q -\u003e q | [y \u003c 7 and fmax !\u003d y + 2 and a[y + 1] \u003d 1 and a[y + 2] \u003d 2; a[y] :\u003d 2; y :\u003d y + 2; a[y] :\u003d 0]",
+                    "id": "T06",
+                    "source": "q",
+                    "target": "q",
+                    "priority": 0,
+                    "is_excluded": false
+                  },
+                  "3": {
+                    "name": "(p:0, id:3) | q -\u003e q | [y \u003c 7 and fmax \u003d y + 2 and a[y + 1] \u003d 1 and a[y + 2] \u003d 2; a[y] :\u003d 2; fmax :\u003d y; y :\u003d y + 2; a[y] :\u003d 0]",
+                    "id": "T07",
+                    "source": "q",
+                    "target": "q",
+                    "priority": 0,
+                    "is_excluded": false
+                  }
+                }
+              }
+            }
+          },
+          "control": {
+            "name": "control",
+            "states": [
+              "running",
+              "done",
+              "success",
+              "failure",
+              "reset"
+            ],
+            "decision_structures": {
+              "running": {
+                "source": "running",
+                "id": "D02",
+                "transitions": {
+                  "0": {
+                    "name": "(p:0, id:0) | running -\u003e done | y \u003d 0 and a[y + 1] \u003d 1 and a[y + 2] \u003d 1",
+                    "id": "T08",
+                    "source": "running",
+                    "target": "done",
+                    "priority": 0,
+                    "is_excluded": false
+                  },
+                  "1": {
+                    "name": "(p:0, id:1) | running -\u003e done | y \u003d 1 and a[y - 1] \u003d 2 and a[y + 1] \u003d 1 and a[y + 2] \u003d 1",
+                    "id": "T09",
+                    "source": "running",
+                    "target": "done",
+                    "priority": 0,
+                    "is_excluded": false
+                  },
+                  "2": {
+                    "name": "(p:0, id:2) | running -\u003e done | y \u003d 7 and a[y - 2] \u003d 2 and a[y - 1] \u003d 2 and a[y + 1] \u003d 1",
+                    "id": "T10",
+                    "source": "running",
+                    "target": "done",
+                    "priority": 0,
+                    "is_excluded": false
+                  },
+                  "3": {
+                    "name": "(p:0, id:3) | running -\u003e done | y \u003d 8 and a[y - 2] \u003d 2 and a[y - 1] \u003d 2",
+                    "id": "T11",
+                    "source": "running",
+                    "target": "done",
+                    "priority": 0,
+                    "is_excluded": false
+                  },
+                  "4": {
+                    "name": "(p:0, id:4) | running -\u003e done | y \u003e 1 and y \u003c 7 and a[y - 2] \u003d 2 and a[y - 1] \u003d 2 and a[y + 1] \u003d 1 and a[y + 2] \u003d 1",
+                    "id": "T12",
+                    "source": "running",
+                    "target": "done",
+                    "priority": 0,
+                    "is_excluded": false
+                  }
+                }
+              },
+              "done": {
+                "source": "done",
+                "id": "D03",
+                "transitions": {
+                  "0": {
+                    "name": "(p:0, id:0) | done -\u003e success | tmin \u003e y and fmax \u003c y",
+                    "id": "T13",
+                    "source": "done",
+                    "target": "success",
+                    "priority": 0,
+                    "is_excluded": false
+                  },
+                  "1": {
+                    "name": "(p:0, id:1) | done -\u003e failure | !(tmin \u003e y and fmax \u003c y)",
+                    "id": "T14",
+                    "source": "done",
+                    "target": "failure",
+                    "priority": 0,
+                    "is_excluded": false
+                  }
+                }
+              },
+              "success": {
+                "source": "success",
+                "id": "D04",
+                "transitions": {
+                  "0": {
+                    "name": "(p:0, id:0) | success -\u003e reset | true",
+                    "id": "T15",
+                    "source": "success",
+                    "target": "reset",
+                    "priority": 0,
+                    "is_excluded": false
+                  }
+                }
+              },
+              "failure": {
+                "source": "failure",
+                "id": "D05",
+                "transitions": {
+                  "0": {
+                    "name": "(p:0, id:0) | failure -\u003e reset | true",
+                    "id": "T16",
+                    "source": "failure",
+                    "target": "reset",
+                    "priority": 0,
+                    "is_excluded": false
+                  }
+                }
+              },
+              "reset": {
+                "source": "reset",
+                "id": "D06",
+                "transitions": {
+                  "0": {
+                    "name": "(p:0, id:0) | reset -\u003e running | true | [true; y :\u003d 4; tmin :\u003d 0; fmax :\u003d 8; a[4] :\u003d 0; a[0] :\u003d 1; a[1] :\u003d 1; a[2] :\u003d 1; a[3] :\u003d 1; a[5] :\u003d 2; a[6] :\u003d 2; a[7] :\u003d 2; a[8] :\u003d 2]",
+                    "id": "T17",
+                    "source": "reset",
+                    "target": "running",
+                    "priority": 0,
+                    "is_excluded": false
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "event_count": {
+    "Thread-0.T02.S": 783906,
+    "Thread-0.T00.S": 1290641,
+    "Thread-2.T09.S": 261274,
+    "Thread-2.T10.F": 0,
+    "Thread-2.D06.F": 0,
+    "Thread-2.T12.F": 0,
+    "Thread-2.D04.F": 0,
+    "Thread-2.D04.S": 0,
+    "Thread-2.D02.S": 519696,
+    "Thread-2.D06.O": 519695,
+    "Thread-2.D04.O": 0,
+    "Thread-0.T02.O": 2345661,
+    "Thread-2.D02.O": 2598382,
+    "Thread-0.T00.O": 3636364,
+    "Thread-0.T00.F": 0,
+    "Thread-1.T05.F": 0,
+    "Thread-2.T10.S": 258123,
+    "Thread-2.T14.O": 519695,
+    "Thread-1.T07.F": 0,
+    "Thread-2.T12.S": 0,
+    "Thread-2.T16.O": 519695,
+    "Thread-2.T14.S": 519695,
+    "Thread-0.T02.F": 0,
+    "Thread-2.D06.S": 519695,
+    "Thread-2.T16.S": 519695,
+    "Thread-2.T14.F": 0,
+    "Thread-2.T16.F": 0,
+    "Thread-1.T05.O": 2330811,
+    "Thread-2.T10.O": 2337072,
+    "Thread-1.T07.O": 1555996,
+    "Thread-1.T05.S": 312,
+    "Thread-2.T12.O": 2078686,
+    "Thread-1.T07.S": 258099,
+    "Thread-1.D01.O": 3637787,
+    "Thread-2.T17.S": 519695,
+    "Thread-1.D01.S": 2339890,
+    "Thread-0.D00.S": 2335870,
+    "Thread-2.T09.F": 0,
+    "Thread-2.T09.O": 2598346,
+    "Thread-0.D00.O": 3636364,
+    "Thread-0.T03.S": 261261,
+    "Thread-0.D00.F": 0,
+    "Thread-0.T01.S": 62,
+    "Thread-2.D05.F": 0,
+    "Thread-2.T08.S": 36,
+    "Thread-2.T11.F": 0,
+    "Thread-2.D03.F": 0,
+    "Thread-2.T13.F": 0,
+    "Thread-2.D05.S": 519695,
+    "Thread-2.D03.S": 519695,
+    "Thread-0.T03.O": 1561755,
+    "Thread-2.D05.O": 519695,
+    "Thread-0.T01.O": 2345723,
+    "Thread-2.D03.O": 519695,
+    "Thread-2.T13.O": 519695,
+    "Thread-1.T04.F": 0,
+    "Thread-2.T11.S": 263,
+    "Thread-2.T15.O": 0,
+    "Thread-1.T06.F": 0,
+    "Thread-2.T13.S": 0,
+    "Thread-2.T17.O": 519695,
+    "Thread-0.T03.F": 0,
+    "Thread-2.T15.S": 0,
+    "Thread-0.T01.F": 0,
+    "Thread-1.T04.O": 3637787,
+    "Thread-2.T15.F": 0,
+    "Thread-1.T06.O": 2330499,
+    "Thread-2.T17.F": 0,
+    "Thread-1.T04.S": 1306976,
+    "Thread-1.D01.F": 0,
+    "Thread-1.T06.S": 774503,
+    "Thread-2.T11.O": 2078949,
+    "Thread-2.T08.F": 0,
+    "Thread-2.D02.F": 0,
+    "Thread-2.T08.O": 2598382
+  }
+}

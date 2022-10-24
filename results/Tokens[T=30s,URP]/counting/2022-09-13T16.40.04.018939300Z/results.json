@@ -1,0 +1,324 @@
+{
+  "model": {
+    "name": "Tokens",
+    "settings": "test_models/Tokens.slco -use_random_pick -running_time\u003d30 -package_name\u003dtesting.randompick -performance_measurements",
+    "classes": {
+      "P": {
+        "name": "P",
+        "state_machines": {
+          "A": {
+            "name": "A",
+            "states": [
+              "act",
+              "update",
+              "wait"
+            ],
+            "decision_structures": {
+              "act": {
+                "source": "act",
+                "id": "D00",
+                "transitions": {
+                  "0": {
+                    "name": "(p:0, id:0) | act -\u003e act | [tokens[0]; tokens[0] :\u003d false]",
+                    "id": "T00",
+                    "source": "act",
+                    "target": "act",
+                    "priority": 0,
+                    "is_excluded": false
+                  },
+                  "1": {
+                    "name": "(p:1, id:1) | act -\u003e update | !tokens[0] and x % 10 !\u003d 0",
+                    "id": "T01",
+                    "source": "act",
+                    "target": "update",
+                    "priority": 1,
+                    "is_excluded": false
+                  },
+                  "2": {
+                    "name": "(p:1, id:2) | act -\u003e wait | [!tokens[0] and x % 10 \u003d 0; tokens[1] :\u003d true]",
+                    "id": "T02",
+                    "source": "act",
+                    "target": "wait",
+                    "priority": 1,
+                    "is_excluded": false
+                  }
+                }
+              },
+              "update": {
+                "source": "update",
+                "id": "D01",
+                "transitions": {
+                  "0": {
+                    "name": "(p:0, id:0) | update -\u003e act | true | [true; x :\u003d (641 * x + 718) % 1009; a :\u003d a + 1]",
+                    "id": "T03",
+                    "source": "update",
+                    "target": "act",
+                    "priority": 0,
+                    "is_excluded": false
+                  }
+                }
+              },
+              "wait": {
+                "source": "wait",
+                "id": "D02",
+                "transitions": {
+                  "0": {
+                    "name": "(p:0, id:0) | wait -\u003e wait | [tokens[0]; tokens[0] :\u003d false]",
+                    "id": "T04",
+                    "source": "wait",
+                    "target": "wait",
+                    "priority": 0,
+                    "is_excluded": false
+                  },
+                  "1": {
+                    "name": "(p:1, id:1) | wait -\u003e update | !tokens[1]",
+                    "id": "T05",
+                    "source": "wait",
+                    "target": "update",
+                    "priority": 1,
+                    "is_excluded": false
+                  }
+                }
+              }
+            }
+          },
+          "B": {
+            "name": "B",
+            "states": [
+              "act",
+              "update",
+              "wait"
+            ],
+            "decision_structures": {
+              "act": {
+                "source": "act",
+                "id": "D03",
+                "transitions": {
+                  "0": {
+                    "name": "(p:0, id:0) | act -\u003e act | [tokens[1]; tokens[1] :\u003d false]",
+                    "id": "T06",
+                    "source": "act",
+                    "target": "act",
+                    "priority": 0,
+                    "is_excluded": false
+                  },
+                  "1": {
+                    "name": "(p:1, id:1) | act -\u003e update | !tokens[1] and x % 10 !\u003d 0",
+                    "id": "T07",
+                    "source": "act",
+                    "target": "update",
+                    "priority": 1,
+                    "is_excluded": false
+                  },
+                  "2": {
+                    "name": "(p:1, id:2) | act -\u003e wait | [!tokens[1] and x % 10 \u003d 0; tokens[2] :\u003d true]",
+                    "id": "T08",
+                    "source": "act",
+                    "target": "wait",
+                    "priority": 1,
+                    "is_excluded": false
+                  }
+                }
+              },
+              "update": {
+                "source": "update",
+                "id": "D04",
+                "transitions": {
+                  "0": {
+                    "name": "(p:0, id:0) | update -\u003e act | true | [true; x :\u003d (193 * x + 953) % 1009; b :\u003d b + 1]",
+                    "id": "T09",
+                    "source": "update",
+                    "target": "act",
+                    "priority": 0,
+                    "is_excluded": false
+                  }
+                }
+              },
+              "wait": {
+                "source": "wait",
+                "id": "D05",
+                "transitions": {
+                  "0": {
+                    "name": "(p:0, id:0) | wait -\u003e wait | [tokens[1]; tokens[1] :\u003d false]",
+                    "id": "T10",
+                    "source": "wait",
+                    "target": "wait",
+                    "priority": 0,
+                    "is_excluded": false
+                  },
+                  "1": {
+                    "name": "(p:1, id:1) | wait -\u003e update | !tokens[2]",
+                    "id": "T11",
+                    "source": "wait",
+                    "target": "update",
+                    "priority": 1,
+                    "is_excluded": false
+                  }
+                }
+              }
+            }
+          },
+          "C": {
+            "name": "C",
+            "states": [
+              "act",
+              "update",
+              "wait"
+            ],
+            "decision_structures": {
+              "act": {
+                "source": "act",
+                "id": "D06",
+                "transitions": {
+                  "0": {
+                    "name": "(p:0, id:0) | act -\u003e act | [tokens[2]; tokens[2] :\u003d false]",
+                    "id": "T12",
+                    "source": "act",
+                    "target": "act",
+                    "priority": 0,
+                    "is_excluded": false
+                  },
+                  "1": {
+                    "name": "(p:1, id:1) | act -\u003e wait | [!tokens[2] and x % 10 \u003d 0; tokens[0] :\u003d true]",
+                    "id": "T13",
+                    "source": "act",
+                    "target": "wait",
+                    "priority": 1,
+                    "is_excluded": false
+                  },
+                  "2": {
+                    "name": "(p:1, id:2) | act -\u003e update | !tokens[2] and x % 10 !\u003d 0",
+                    "id": "T14",
+                    "source": "act",
+                    "target": "update",
+                    "priority": 1,
+                    "is_excluded": false
+                  }
+                }
+              },
+              "update": {
+                "source": "update",
+                "id": "D07",
+                "transitions": {
+                  "0": {
+                    "name": "(p:0, id:0) | update -\u003e act | true | [true; x :\u003d (811 * x + 31) % 1009; c :\u003d c + 1]",
+                    "id": "T15",
+                    "source": "update",
+                    "target": "act",
+                    "priority": 0,
+                    "is_excluded": false
+                  }
+                }
+              },
+              "wait": {
+                "source": "wait",
+                "id": "D08",
+                "transitions": {
+                  "0": {
+                    "name": "(p:0, id:0) | wait -\u003e wait | [tokens[2]; tokens[2] :\u003d false]",
+                    "id": "T16",
+                    "source": "wait",
+                    "target": "wait",
+                    "priority": 0,
+                    "is_excluded": false
+                  },
+                  "1": {
+                    "name": "(p:1, id:1) | wait -\u003e update | !tokens[0]",
+                    "id": "T17",
+                    "source": "wait",
+                    "target": "update",
+                    "priority": 1,
+                    "is_excluded": false
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "event_count": {
+    "Thread-0.T02.S": 2092570,
+    "Thread-0.T00.S": 431076,
+    "Thread-2.D08.F": 0,
+    "Thread-0.T04.O": 56855072,
+    "Thread-2.D06.F": 0,
+    "Thread-0.D01.F": 0,
+    "Thread-2.T12.F": 0,
+    "Thread-0.T04.S": 203691,
+    "Thread-2.D08.O": 42520993,
+    "Thread-2.D06.O": 16591016,
+    "Thread-0.T02.O": 2521849,
+    "Thread-0.T00.O": 21314394,
+    "Thread-0.T00.F": 0,
+    "Thread-2.T14.O": 7662244,
+    "Thread-1.T07.F": 0,
+    "Thread-2.T12.S": 1537549,
+    "Thread-2.T16.O": 21261517,
+    "Thread-1.T09.F": 0,
+    "Thread-2.D08.S": 750312,
+    "Thread-0.T04.F": 0,
+    "Thread-2.T14.S": 5700337,
+    "Thread-2.D06.S": 7872653,
+    "Thread-0.T02.F": 0,
+    "Thread-2.T16.S": 115545,
+    "Thread-2.T14.F": 0,
+    "Thread-2.T16.F": 0,
+    "Thread-1.T07.O": 17967381,
+    "Thread-2.T12.O": 8294005,
+    "Thread-1.T09.O": 16498199,
+    "Thread-1.T07.S": 14845105,
+    "Thread-1.D05.F": 0,
+    "Thread-1.T09.S": 16498199,
+    "Thread-1.D03.O": 35937857,
+    "Thread-2.T17.S": 634767,
+    "Thread-1.T10.F": 0,
+    "Thread-1.D05.O": 100701433,
+    "Thread-1.D03.S": 17967413,
+    "Thread-1.D05.S": 2276451,
+    "Thread-0.D00.S": 21315340,
+    "Thread-0.D02.S": 2296261,
+    "Thread-1.T10.O": 50348625,
+    "Thread-1.T10.S": 623357,
+    "Thread-0.D00.O": 42627937,
+    "Thread-0.D02.O": 113713102,
+    "Thread-0.T03.S": 20884264,
+    "Thread-0.D00.F": 0,
+    "Thread-0.T01.S": 18791694,
+    "Thread-2.D07.F": 0,
+    "Thread-0.T05.O": 56858030,
+    "Thread-0.D02.F": 0,
+    "Thread-0.T05.S": 2092570,
+    "Thread-2.T13.F": 0,
+    "Thread-2.D07.O": 6335104,
+    "Thread-0.T05.F": 0,
+    "Thread-0.T03.O": 20884264,
+    "Thread-0.T01.O": 21313543,
+    "Thread-2.T13.O": 8297011,
+    "Thread-2.T15.O": 6335104,
+    "Thread-1.T06.F": 0,
+    "Thread-2.T13.S": 634767,
+    "Thread-2.T17.O": 21259476,
+    "Thread-1.T08.F": 0,
+    "Thread-0.T03.F": 0,
+    "Thread-2.T15.S": 6335104,
+    "Thread-0.T01.F": 0,
+    "Thread-2.D07.S": 6335104,
+    "Thread-2.T15.F": 0,
+    "Thread-1.T06.O": 17970476,
+    "Thread-2.T17.F": 0,
+    "Thread-1.T08.O": 3122276,
+    "Thread-1.T06.S": 1469213,
+    "Thread-1.D03.F": 0,
+    "Thread-1.T08.S": 1653095,
+    "Thread-1.D04.F": 0,
+    "Thread-1.D04.O": 16498199,
+    "Thread-1.D04.S": 16498199,
+    "Thread-1.T11.F": 0,
+    "Thread-0.D01.S": 20884264,
+    "Thread-1.T11.O": 50352808,
+    "Thread-1.T11.S": 1653094,
+    "Thread-0.D01.O": 20884264
+  }
+}
